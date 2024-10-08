@@ -11,8 +11,7 @@ class Clientes extends Model
 
     protected $fillable = [
         'razaoSocialCliente',
-        'dominioCliente',
-        'emailCliente',
-        'passwordCliente',
+        'email',
+        'password',
     ];
 }

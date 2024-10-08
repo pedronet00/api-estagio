@@ -47,33 +47,26 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-       try{
-
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'razaoSocialCliente' => 'required|string|max:255',
-            'dominioCliente' => 'required|string|max:255',
-            'emailCliente' => 'required|email|max:255|unique:clientes',
-            'passwordCliente' => 'required|string|min:8',
+            'email' => 'required|string|email|max:255|unique:clientes',
+            'password' => 'required|string|min:6',
         ]);
 
-        Clientes::create([
-            'razaoSocialCliente' => $validated['razaoSocialCliente'],
-            'dominioCliente' => $validated['dominioCliente'],
-            'emailCliente' => $validated['emailCliente'],
-            'passwordCliente' => bcrypt($validated['passwordCliente']),
-        ]);
+        try {
+            $cliente = Clientes::create([
+                'razaoSocialCliente' => $validatedData['razaoSocialCliente'],
+                'email' => $validatedData['email'], // Certifique-se de que está capturando o 'email' corretamente
+                'password' => Hash::make($validatedData['password']),
+            ]);
 
-        // Criação do tenant
-        $tenant = Tenant::create(['id' => $request->dominioCliente]);
-        $tenant->domains()->create(['domain' => "{$request->dominioCliente}.localhost"]);
+            return response()->json(['message' => 'Cliente registrado com sucesso'], 201);
 
-       } catch(Exception $e){
-            
-        return response()->json(['message' => 'Falha ao registrar cliente', 'error' => $e->getMessage()], 500);
-       }
-
-        return response()->json(['message' => 'Cliente registrado com sucesso!'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Falha ao registrar cliente', 'error' => $e->getMessage()], 500);
+        }
     }
+
 
 
     public function logout(Request $request)
