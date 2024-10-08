@@ -19,6 +19,7 @@ use App\Http\Controllers\RecursoController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\LocaisController;
 use App\Http\Controllers\ClientesController;
+use App\Http\Controllers\DizimosController;
 
 
 // Route::middleware(['tenant'])->group(function () {
@@ -34,6 +35,10 @@ use App\Http\Controllers\ClientesController;
     Route::get('/gerarRelatorioUsuarios', [UserController::class, 'gerarRelatorioUsuarios']);
     Route::get('/gerarRelatorioPastores', [UserController::class, 'gerarRelatorioPastores']);
 
+
+    // Dízimos
+    Route::get('/dizimos', [DizimosController::class, 'index']);
+    Route::post('/dizimos', [DizimosController::class, 'store']);
 
     // Locais
     Route::get('/locais', [LocaisController::class, 'index']);
