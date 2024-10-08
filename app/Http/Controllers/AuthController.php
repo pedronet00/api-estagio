@@ -19,8 +19,8 @@ class AuthController extends Controller
     {
         // Validação dos dados de entrada
         $validated = $request->validate([
-            'emailCliente' => 'required|email',
-            'passwordCliente' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string',
         ]);
 
         // Procurar o usuario na tabela
