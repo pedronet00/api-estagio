@@ -57,9 +57,11 @@ return [
          * TenantDatabaseManagers are classes that handle the creation & deletion of tenant databases.
          */
         'managers' => [
-            'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
-            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
-            'pgsql' => Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager::class,
+            'sqlite' => Stancl\Tenancy\Database\TenantDatabaseManagers\NullDatabaseManager::class,
+            'mysql' => Stancl\Tenancy\Database\TenantDatabaseManagers\NullDatabaseManager::class,
+            'pgsql' => Stancl\Tenancy\Database\TenantDatabaseManagers\NullDatabaseManager::class,
+
+
 
         /**
          * Use this database manager for MySQL to have a DB user created for each tenant database.
