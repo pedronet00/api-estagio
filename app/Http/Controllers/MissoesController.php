@@ -12,9 +12,9 @@ class MissoesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Missoes::all();
+        return Missoes::where('idCliente', $request->idCliente)->get();
     }
 
 
@@ -42,7 +42,9 @@ class MissoesController extends Controller
                 'nomeMissao' => $request->nomeMissao,
                 'quantidadeMembros' => $request->quantidadeMembros,
                 'cidadeMissao' => $request->cidadeMissao,
-                'pastorTitular' => $request->pastorTitular
+                'pastorTitular' => $request->pastorTitular,
+                'statusMissao' => 1,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch(Exception $e){

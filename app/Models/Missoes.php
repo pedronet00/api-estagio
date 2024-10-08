@@ -13,6 +13,8 @@ class Missoes extends Model
         "nomeMissao",
         "quantidadeMembros",
         "cidadeMissao",
-        "pastorTitular"
+        "pastorTitular",
+        "statusMissao",
+        "idCliente"
     ];
 }

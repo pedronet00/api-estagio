@@ -11,6 +11,7 @@ class Locais extends Model
 
     protected $fillable = [
         'nomeLocal',
-        'statusLocal'
+        'statusLocal',
+        'idCliente'
     ];
 }

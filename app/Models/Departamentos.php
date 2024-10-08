@@ -13,6 +13,7 @@ class Departamentos extends Model
         'tituloDepartamento',
         'textoDepartamento',
         'imgDepartamento',
-        'statusDepartamento'
+        'statusDepartamento',
+        'idCliente'
     ];
 }

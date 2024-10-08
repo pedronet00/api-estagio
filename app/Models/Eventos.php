@@ -11,12 +11,13 @@ class Eventos extends Model
     use HasFactory;
 
     protected $fillable = [
-        "nomeEvento",
-        "descricaoEvento",
-        "localEvento",
-        "dataEvento",
-        "prioridadeEvento",
-        "orcamentoEvento"
+        'nomeEvento',
+        'descricaoEvento',
+        'localEvento',
+        'dataEvento',
+        'prioridadeEvento',
+        'orcamentoEvento',
+        'idCliente'
     ];
 
     public function local()

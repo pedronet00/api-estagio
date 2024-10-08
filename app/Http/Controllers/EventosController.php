@@ -9,9 +9,9 @@ use App\Models\Eventos;
 class EventosController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        return Eventos::with(['local'])->get();
+        return Eventos::where('idCliente', $request->idCliente)->with(['local'])->get();
     }
 
     
@@ -25,7 +25,8 @@ class EventosController extends Controller
                 "dataEvento" => $request->dataEvento,
                 "localEvento" => $request->localEvento,
                 "prioridadeEvento" => $request->prioridadeEvento,
-                "orcamentoEvento" => $request->orcamentoEvento
+                "orcamentoEvento" => $request->orcamentoEvento,
+                "idCliente" => $request->idCliente
             ]);
 
         } catch(Exception $e){

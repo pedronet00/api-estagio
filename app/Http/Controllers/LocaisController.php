@@ -12,9 +12,9 @@ class LocaisController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Locais::all();
+        return Locais::where('idCliente', $request->idCliente)->get();
     }
 
 
@@ -28,7 +28,8 @@ class LocaisController extends Controller
 
             $local = Locais::create([
                 'nomeLocal' => $request->nomeLocal,
-                'statusLocal' => 1
+                'statusLocal' => 1,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch(Exception $e){

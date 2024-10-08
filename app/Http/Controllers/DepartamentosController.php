@@ -10,9 +10,14 @@ use Exception;
 class DepartamentosController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        return Departamentos::all();
+
+        $idCliente = $request->query('idCliente');
+
+        if($idCliente){
+            return Departamentos::where('idCliente', $idCliente)->get();
+        }
     }
 
     public function store(Request $request)
@@ -31,7 +36,8 @@ class DepartamentosController extends Controller
                 'tituloDepartamento' => $request->tituloDepartamento,
                 'textoDepartamento' => $request->textoDepartamento,
                 'imgDepartamento' => $request->imgDepartamento,
-                'statusDepartamento' => 1
+                'statusDepartamento' => 1,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch(Exception $e){
