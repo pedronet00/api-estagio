@@ -58,17 +58,30 @@ class EventosController extends Controller
     }
 
     
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        try{
+
+            $evento = Eventos::find($id);
+
+            if(!$evento){
+                throw new Exception("Evento não encontrado!");
+            }
+
+            $evento->nomeEvento = $request->nomeEvento ?? $evento->nomeEvento;
+            $evento->descricaoEvento = $request->descricaoEvento ?? $evento->descricaoEvento;
+            $evento->localEvento = $request->localEvento ?? $evento->localEvento;
+            $evento->dataEvento = $request->dataEvento ?? $evento->dataEvento;
+            $evento->prioridadeEvento = $request->prioridadeEvento ?? $evento->prioridadeEvento;
+            $evento->orcamentoEvento = $request->orcamentoEvento ?? $evento->orcamentoEvento;
+
+            $evento->save();
+
+        } catch(Exception $e){
+            return response()->json(['message' => "Erro ao editar evento!", 'error' => $e->getMessage()]);
+        }
+
+        return response()->json(['message' => "Evento editado com sucesso!", 'evento' => $evento]);
     }
 
     /**

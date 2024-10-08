@@ -41,6 +41,8 @@ use App\Http\Controllers\ClientesController;
     // Eventos
     Route::get('/eventos', [EventosController::class, 'index']);
     Route::post('/eventos', [EventosController::class, 'store']);
+    Route::get('/eventos/{id}', [EventosController::class, 'show']);
+    Route::put('/eventos/{id}', [EventosController::class, 'update']);
 
 
     // Recurso
