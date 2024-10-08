@@ -17,29 +17,32 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        // Validação dos dados de entrada
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
+        $data = $request->validate([
+            'email' => ['required', 'email', 'exists:users'],
+            'password' => ['required', 'min:6']
         ]);
 
-        // Procurar o usuario na tabela
-        $usuario = User::where('email', $validated['email'])->first();
-
-        // Verificar se o usuario foi encontrado e se a senha está correta
-        if ($usuario && Hash::check($validated['password'], $usuario->password)) {
-
-            // Retornar o subdomínio ou redirecionar o usuário
-            return response()->json([
-                'message' => 'Login bem-sucedido',
-            ], 200);
-
-        } else {
-            // Caso email ou senha estejam errados
+        if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
             return response()->json([
                 'message' => 'Credenciais inválidas',
             ], 401);
         }
+
+        $user = Auth::user();
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+        $name = $user->name;
+        $idUser = $user->id;
+        $nivelUsuario = $user->nivelUsuario;
+
+        return response()->json([
+            'message' => 'Logado com sucesso!',
+            'user' => $user,
+            'token' => $token,
+            'name' => $name,
+            'idUser' => $idUser,
+            'nivelUsuario' => $nivelUsuario
+        ]);
     }
 
     public function register(Request $request)
