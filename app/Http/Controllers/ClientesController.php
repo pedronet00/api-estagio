@@ -26,7 +26,9 @@ class ClientesController extends Controller
 
             $cliente = Clientes::create([
                 'razaoSocialCliente' => $request->razaoSocialCliente,
-                'dominioCliente' => $request->dominioCliente
+                'dominioCliente' => $request->dominioCliente,
+                'emailCliente' => $request->emailCliente,
+                'passwordCliente' => $request->passwordCliente
             ]);
 
         } catch(Exception $e){
