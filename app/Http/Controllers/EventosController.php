@@ -40,7 +40,7 @@ class EventosController extends Controller
     {
         try{
 
-            if(!$request->id){
+            if(!$id){
                 return response()->json(['error' => 'ID do evento não informado.'], 400);
             }
 
