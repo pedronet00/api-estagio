@@ -23,19 +23,15 @@ class AuthController extends Controller
             'passwordCliente' => 'required|string',
         ]);
 
-        // Procurar o cliente na tabela
-        $cliente = Clientes::where('emailCliente', $validated['emailCliente'])->first();
+        // Procurar o usuario na tabela
+        $usuario = User::where('email', $validated['email'])->first();
 
-        // Verificar se o cliente foi encontrado e se a senha está correta
-        if ($cliente && Hash::check($validated['passwordCliente'], $cliente->passwordCliente)) {
-
-            // Se a senha bater, pegar o dominioCliente
-            $dominioCliente = $cliente->dominioCliente;
+        // Verificar se o usuario foi encontrado e se a senha está correta
+        if ($usuario && Hash::check($validated['password'], $cliente->password)) {
 
             // Retornar o subdomínio ou redirecionar o usuário
             return response()->json([
                 'message' => 'Login bem-sucedido',
-                'subdominio' => "{$dominioCliente}.aliance.app.br"
             ], 200);
 
         } else {
