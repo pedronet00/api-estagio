@@ -17,33 +17,47 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // Validação dos dados de entrada
         $data = $request->validate([
-            'email' => ['required', 'email', 'exists:users'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'min:6']
         ]);
 
-        if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+        // Tente encontrar o cliente com o e-mail fornecido
+        $cliente = Clientes::where('email', $data['email'])->first();
+
+        // Verifica se um cliente foi encontrado
+        if ($cliente && Hash::check($data['password'], $cliente->password)) {
+            // Login bem-sucedido para cliente
+
             return response()->json([
-                'message' => 'Credenciais inválidas',
-            ], 401);
+                'message' => 'Logado com sucesso como cliente!',
+                'user' => $cliente,
+                'nivelUsuario' => 4 // Nível de usuário para clientes
+            ]);
         }
 
-        $user = Auth::user();
+        // Se não encontrar um cliente, tente encontrar um usuário
+        $user = User::where('email', $data['email'])->first();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-        $name = $user->name;
-        $idUser = $user->id;
-        $nivelUsuario = $user->nivelUsuario;
+        // Verifica se um usuário foi encontrado
+        if ($user && Hash::check($data['password'], $user->password)) {
+            // Login bem-sucedido para usuário
 
+            return response()->json([
+                'message' => 'Logado com sucesso como usuário!',
+                'user' => $user,
+                'nivelUsuario' => $user->nivelUsuario // Nível de usuário do usuário
+            ]);
+        }
+
+        // Se nenhum cliente ou usuário foi autenticado
         return response()->json([
-            'message' => 'Logado com sucesso!',
-            'user' => $user,
-            'token' => $token,
-            'name' => $name,
-            'idUser' => $idUser,
-            'nivelUsuario' => $nivelUsuario
-        ]);
+            'message' => 'Credenciais inválidas',
+        ], 401);
     }
+
+
 
     public function register(Request $request)
     {
