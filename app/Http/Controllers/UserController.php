@@ -12,9 +12,9 @@ class UserController extends Controller
 {
     
     public function index()
-{
-    return User::with('nivelUsuario')->orderBy('name', 'asc')->get();
-}
+    {
+        return User::with('nivelUsuario')->orderBy('name', 'asc')->get();
+    }
 
 
     public function store(Request $request)
@@ -156,6 +156,13 @@ class UserController extends Controller
         } catch(Exception $e){
             return response()->json(['error' => 'Erro ao deletar usuário: '. $e->getMessage()], 404);
         }
+    }
+
+    public function contarUsuarios(){
+
+        $qtde_usuarios = User::count();
+
+        return response()->json(['quantidade_usuarios' => $qtde_usuarios]);
     }
 
     public function gerarRelatorioUsuarios()
