@@ -27,7 +27,7 @@ class AuthController extends Controller
         $usuario = User::where('email', $validated['email'])->first();
 
         // Verificar se o usuario foi encontrado e se a senha está correta
-        if ($usuario && Hash::check($validated['password'], $cliente->password)) {
+        if ($usuario && Hash::check($validated['password'], $usuario->password)) {
 
             // Retornar o subdomínio ou redirecionar o usuário
             return response()->json([
