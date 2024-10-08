@@ -11,10 +11,26 @@ use Validator;
 class UserController extends Controller
 {
     
-    public function index()
+    public function index(Request $request)
     {
-        return User::with('nivelUsuario')->orderBy('name', 'asc')->get();
+        // Pega o idCliente da requisição
+        $idCliente = $request->query('idCliente');
+
+        // Verifica se o idCliente foi passado
+        if ($idCliente) {
+            // Retorna apenas os usuários relacionados ao idCliente
+            return User::where('idCliente', $idCliente)
+                    ->with('nivelUsuario')
+                    ->orderBy('name', 'asc')
+                    ->get();
+        }
+
+        // Caso não seja passado, retorna todos os usuários
+        return User::with('nivelUsuario')
+                ->orderBy('name', 'asc')
+                ->get();
     }
+
 
 
     public function store(Request $request)
@@ -27,6 +43,7 @@ class UserController extends Controller
                 'password' => 'required|string|min:6',
                 'nivelUsuario' => 'required',
                 'dataNascimentoUsuario' => 'required|date',
+                'idCliente' => 'required|integer'
             ]);
 
             if ($validator->fails()) {
@@ -41,6 +58,7 @@ class UserController extends Controller
                 'imgUsuario' => $request->imgUsuario,
                 'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
                 'usuarioAtivo' => true,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch (Exception $e) {
