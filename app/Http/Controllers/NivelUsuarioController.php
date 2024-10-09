@@ -12,9 +12,9 @@ class NivelUsuarioController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return NivelUsuario::all();
+        return NivelUsuario::where('idCliente', $request->idCliente)->get();
     }
 
     public function store(Request $request)
@@ -26,7 +26,8 @@ class NivelUsuarioController extends Controller
             }
 
             $nivelUsuario = NivelUsuario::create([
-                'nivelUsuario' => $request->nivelUsuario
+                'nivelUsuario' => $request->nivelUsuario,
+                'idCliente' => $request->idCliente
             ]);
                         
         } catch(Exception $e){

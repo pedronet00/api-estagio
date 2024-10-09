@@ -11,6 +11,7 @@ class NivelUsuario extends Model
 
     protected $fillable = [
         'nivelUsuario',
+        'idCliente'
     ];
 
     public function users()
