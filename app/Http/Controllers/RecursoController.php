@@ -12,9 +12,9 @@ class RecursoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Recursos::with(['tipo', 'categoria'])->get();
+        return Recursos::where('idCliente', $request->idCliente)->with(['tipo', 'categoria'])->get();
     }
 
     public function store(Request $request)
@@ -41,6 +41,7 @@ class RecursoController extends Controller
                 'tipoRecurso' => $request->tipoRecurso,
                 'categoriaRecurso' => $request->categoriaRecurso,
                 'quantidadeRecurso' => $request->quantidadeRecurso,
+                'idCliente' => $request->idCliente
             ]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);

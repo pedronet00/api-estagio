@@ -12,9 +12,9 @@ class TipoRecursoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return TipoRecurso::all();
+        return TipoRecurso::where('idCliente', $request->idCliente)->get();
     }
 
 
@@ -30,12 +30,15 @@ class TipoRecursoController extends Controller
             }
 
             $tipoRecurso = TipoRecurso::create([
-                'tipoRecurso' => $request->tipoRecurso
+                'tipoRecurso' => $request->tipoRecurso,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch(Exception $e){
             return response()->json(['error' => 'Erro ao salvar tipo de recurso: '. $e->getMessage()], 404);
         }
+
+        return response()->json(['message' => 'Sucesso!', 'tipoRecurso' => $tipoRecurso], 201);
     }
 
     /**

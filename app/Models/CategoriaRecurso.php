@@ -11,5 +11,6 @@ class CategoriaRecurso extends Model
 
     protected $fillable = [
         'categoriaRecurso',
+        'idCliente'
     ];
 }

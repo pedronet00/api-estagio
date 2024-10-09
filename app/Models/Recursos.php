@@ -15,7 +15,8 @@ class Recursos extends Model
         'nomeRecurso',
         'tipoRecurso',
         'categoriaRecurso',
-        'quantidadeRecurso'
+        'quantidadeRecurso',
+        'idCliente'
     ];
 
     public function tipo()

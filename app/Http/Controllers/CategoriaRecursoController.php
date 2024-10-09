@@ -12,9 +12,9 @@ class CategoriaRecursoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return CategoriaRecurso::all();
+        return CategoriaRecurso::where('idCliente', $request->idCliente)->get();
     }
 
 
@@ -30,7 +30,8 @@ class CategoriaRecursoController extends Controller
             }
 
             $categoriaRecurso = CategoriaRecurso::create([
-                'categoriaRecurso' => $request->categoriaRecurso
+                'categoriaRecurso' => $request->categoriaRecurso,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch(Exception $e){

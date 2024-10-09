@@ -10,6 +10,7 @@ class TipoRecurso extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tipoRecurso'
+        'tipoRecurso',
+        'idCliente'
     ];
 }
