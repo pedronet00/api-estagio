@@ -14,7 +14,7 @@ class MissoesController extends Controller
      */
     public function index(Request $request)
     {
-        return Missoes::where('idCliente', $request->idCliente)->get();
+        return Missoes::where('idCliente', $request->idCliente)->with('pastorTitular')->get();
     }
 
 

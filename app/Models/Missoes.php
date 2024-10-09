@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Missoes extends Model
 {
@@ -17,4 +18,9 @@ class Missoes extends Model
         "statusMissao",
         "idCliente"
     ];
+
+    public function pastorTitular()
+    {
+        return $this->belongsTo(User::class, 'pastorTitular');
+    }
 }
