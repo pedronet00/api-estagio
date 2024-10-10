@@ -31,8 +31,6 @@ class UserController extends Controller
                 ->get();
     }
 
-
-
     public function store(Request $request)
     {
         try {
@@ -183,13 +181,24 @@ class UserController extends Controller
         return response()->json(['quantidade_usuarios' => $qtde_usuarios]);
     }
 
-    public function gerarRelatorioUsuarios()
+    public function gerarRelatorioUsuarios(Request $request)
     {
         try{
 
             $data_hoje = date("Y-m-d H:i");
 
-            $usuarios = User::where('nivelUsuario', '<=', 3)->get();
+            $usuarioCount = User::where('idCliente', $request->idCliente)->count();
+            $usuariosAtivos = User::where('idCliente', $request->idCliente)->where('usuarioAtivo', 1)->count();
+            $usuariosInativos = User::where('idCliente', $request->idCliente)->where('usuarioAtivo', 0)->count();
+            $usuariosComuns = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 1)->count();
+            $usuariosLideres = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 2)->count();
+            $usuariosPastores = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 3)->count();
+            $usuariosAdm = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 4)->count();
+
+            $usuarios = User::where('idCliente', $request->idCliente)
+            ->with('nivelUsuario')
+            ->orderBy('name', 'asc')
+            ->get();
 
             if(!$usuarios){
                 throw new Exception("Nenhum usuário encontrado!");
@@ -199,25 +208,19 @@ class UserController extends Controller
             return response()->json(['message' => $e->getMessage()]);
         }
 
-        return response()->json(['message' => 'Relatório gerado com sucesso!', 'titulo' => 'Relatório dos Membros da Primeira Igreja Batista de Presidente Prudente', 'usuarios' => $usuarios, 'data' => $data_hoje], 200);
-    }
-
-    public function gerarRelatorioPastores()
-    {
-        try{
-
-            $data_hoje = date("Y-m-d H:i");
-
-            $pastores = User::where('nivelUsuario', '>', 3)->get();
-
-            if($pastores->isEmpty()){
-                throw new Exception("Nenhum pastor encontrado!");
-            }
-
-        } catch(Exception $e){
-            return response()->json(['message' => $e->getMessage()], 500);
+        return response()->json([
+            'message' => 'Relatório gerado com sucesso!', 
+            'titulo' => 'Relatório dos Membros da Primeira Igreja Batista de Presidente Prudente', 
+            'qtdeUsuarios' => $usuarioCount,
+            'qtdeUsuariosAtivos' => $usuariosAtivos,
+            'qtdeUsuariosInativos' => $usuariosInativos,
+            'qtdeUsuariosComuns' => $usuariosComuns,
+            'qtdeUsuariosLideres' => $usuariosLideres,
+            'qtdeUsuariosPastores' => $usuariosPastores,
+            'qtdeUsuariosAdm' => $usuariosAdm,
+            'usuarios' => $usuarios, 
+            'data' => $data_hoje], 200);
         }
 
-        return response()->json(['message' => 'Relatório gerado com sucesso!', 'titulo' => 'Relatório dos Pastores da Primeira Igreja Batista de Presidente Prudente', 'pastores' => $pastores, 'data' => $data_hoje], 200);
-    }
+    
 }

@@ -32,8 +32,7 @@ use App\Http\Controllers\DizimosController;
     Route::patch('/deactivateUser/{id}', [UserController::class, 'deactivate']);
     Route::patch('/activateUser/{id}', [UserController::class, 'activate']);
     Route::get('/userCount', [UserController::class, 'contarUsuarios']);
-    Route::get('/gerarRelatorioUsuarios', [UserController::class, 'gerarRelatorioUsuarios']);
-    Route::get('/gerarRelatorioPastores', [UserController::class, 'gerarRelatorioPastores']);
+    Route::get('/userReport', [UserController::class, 'gerarRelatorioUsuarios']);
 
 
     // Dízimos
