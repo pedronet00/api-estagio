@@ -81,6 +81,7 @@ use App\Http\Controllers\DizimosController;
     Route::put('/departamentos/{id}', [DepartamentosController::class, 'update']);
     Route::patch('/departamento/{id}/desativar', [DepartamentosController::class, 'deactivate']);
     Route::patch('/departamento/{id}/ativar', [DepartamentosController::class, 'activate']);
+    Route::get('/departamentoReport', [DepartamentosController::class, 'gerarRelatorioDepartamentos']);
 
     // Tipo Post 
     Route::get('/tipoPost', [TipoPostController::class, 'index']); 

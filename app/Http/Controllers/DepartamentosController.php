@@ -148,6 +148,38 @@ class DepartamentosController extends Controller
         return response()->json(['message'=> 'Departamento desativado com sucesso!']);
     }
 
+    public function gerarRelatorioDepartamentos(Request $request)
+    {
+        try{
+
+            $data_hoje = date("Y-m-d H:i");
+
+            $departamentoCount = Departamentos::where('idCliente', $request->idCliente)->count();
+            $departamentosAtivos = Departamentos::where('idCliente', $request->idCliente)->where('statusDepartamento', 1)->count();
+            $departamentosInativos = Departamentos::where('idCliente', $request->idCliente)->where('statusDepartamento', 0)->count();
+
+            $departamentos = Departamentos::where('idCliente', $request->idCliente)->orderBy('name', 'asc')->get();
+
+            if(!$departamentos){
+                throw new Exception("Nenhum departamento encontrado!");
+            }
+
+        } catch(Exception $e){
+            return response()->json(['message' => $e->getMessage()]);
+        }
+
+        return response()->json([
+            'message' => 'Relatório gerado com sucesso!', 
+            'titulo' => 'Relatório dos Departamentos da Primeira Igreja Batista de Presidente Prudente', 
+            'qtdeDepartamentos' => $departamentoCount,
+            'qtdeDepartamentosAtivos' => $departamentosAtivos,
+            'qtdeDepartamentosInativos' => $departamentosInativos,
+            'departamentos' => $departamentos, 
+            'data' => $data_hoje
+            ],200
+        );
+    }
+
     public function search(Request $rquest){
         
     }
