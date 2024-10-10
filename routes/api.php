@@ -22,7 +22,6 @@ use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\DizimosController;
 
 
-// Route::middleware(['tenant'])->group(function () {
     // Usuários
     Route::get('/user', [UserController::class, 'index']);
     Route::get('/user/{id}', [UserController::class, 'show']);
@@ -55,6 +54,7 @@ use App\Http\Controllers\DizimosController;
     Route::post('/recurso', [RecursoController::class, 'store']);
     Route::patch('/recurso/{id}/diminuirQuantidade', [RecursoController::class, 'diminuirQuantidade']);
     Route::patch('/recurso/{id}/aumentarQuantidade', [RecursoController::class, 'aumentarQuantidade']);
+    Route::get('/recursoReport', [RecursoController::class, 'gerarRelatorioRecursos']);
 
     // Categoria Recurso
     Route::get('/categoriaRecurso', [CategoriaRecursoController::class, 'index']);
@@ -113,12 +113,11 @@ use App\Http\Controllers\DizimosController;
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
     Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
 
-// });
+    // Clientes
+    Route::get('/clientes', [ClientesController::class, 'index']);
+    Route::post('/clientes', [ClientesController::class, 'store']);
 
-Route::get('/clientes', [ClientesController::class, 'index']);
-Route::post('/clientes', [ClientesController::class, 'store']);
-
-// Auth
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout']);
+    // Auth
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
