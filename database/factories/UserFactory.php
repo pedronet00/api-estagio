@@ -32,7 +32,8 @@ class UserFactory extends Factory
             'dataNascimentoUsuario' => fake()->date(),
             'nivelUsuario' => fake()->numberBetween(1, 3),
             'imgUsuario' => fake()->imageUrl(400, 400, 'people', true, 'Faker'),
-            'usuarioAtivo' => fake()->boolean()
+            'usuarioAtivo' => fake()->boolean(),
+            'idCliente' => fake()->numberBetween(1,3)
         ];
     }
 

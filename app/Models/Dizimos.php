@@ -12,6 +12,7 @@ class Dizimos extends Model
     protected $fillable = [
         'dataCulto',
         'turnoCulto',
-        'valorArrecadado'
+        'valorArrecadado',
+        'idCliente'
     ];
 }

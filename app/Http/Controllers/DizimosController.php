@@ -11,9 +11,9 @@ class DizimosController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Dizimos::all();
+        return Dizimos::where('idCliente', $request->idCliente)->get();
     }
 
     public function store(Request $request)
@@ -24,9 +24,9 @@ class DizimosController extends Controller
                 throw new Exception("A data do culto não pode estar vazia!");
             }
 
-            if (!$request->turnoCulto) {
-                throw new Exception("O turno do culto não pode estar vazio!");
-            }
+            // if (!$request->turnoCulto) {
+            //     throw new Exception("O turno do culto não pode estar vazio!");
+            // }
 
             if (!$request->valorArrecadado) {
                 throw new Exception("O valor arrecadado não pode estar vazio!");
@@ -45,14 +45,15 @@ class DizimosController extends Controller
             $dizimo = Dizimos::create([
                 'dataCulto' => $request->dataCulto,
                 'turnoCulto' => $request->turnoCulto,
-                'valorArrecadado' => $request->valorArrecadado
+                'valorArrecadado' => $request->valorArrecadado,
+                'idCliente' => $request->idCliente
             ]);
 
         } catch (Exception $e) {
-            return response()->json(['message' => 'Erro ao salvar registro de dízimo', 'erro' => $e->getMessage()]);
+            return response()->json(['status' => 500, 'message' => 'Erro ao salvar registro de dízimo', 'erro' => $e->getMessage()]);
         }
 
-        return response()->json(['message' => 'Sucesso!', 'dizimo' => $dizimo]);
+        return response()->json(['status' => 200, 'message' => 'Sucesso!', 'dizimo' => $dizimo]);
     }
 
 
