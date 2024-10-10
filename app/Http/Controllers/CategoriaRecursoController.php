@@ -14,7 +14,7 @@ class CategoriaRecursoController extends Controller
      */
     public function index(Request $request)
     {
-        return CategoriaRecurso::where('idCliente', $request->idCliente)->get();
+        return CategoriaRecurso::where('idCliente', $request->idCliente)->orderby('categoriaRecurso', 'asc')->get();
     }
 
 

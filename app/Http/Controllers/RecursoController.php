@@ -14,7 +14,7 @@ class RecursoController extends Controller
      */
     public function index(Request $request)
     {
-        return Recursos::where('idCliente', $request->idCliente)->with(['tipo', 'categoria'])->get();
+        return Recursos::where('idCliente', $request->idCliente)->with(['tipo', 'categoria'])->orderBy('nomeRecurso', 'asc')->get();
     }
 
     public function store(Request $request)

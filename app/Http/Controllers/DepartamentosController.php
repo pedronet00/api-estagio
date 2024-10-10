@@ -158,7 +158,7 @@ class DepartamentosController extends Controller
             $departamentosAtivos = Departamentos::where('idCliente', $request->idCliente)->where('statusDepartamento', 1)->count();
             $departamentosInativos = Departamentos::where('idCliente', $request->idCliente)->where('statusDepartamento', 0)->count();
 
-            $departamentos = Departamentos::where('idCliente', $request->idCliente)->orderBy('name', 'asc')->get();
+            $departamentos = Departamentos::where('idCliente', $request->idCliente)->orderBy('tituloDepartamento', 'asc')->get();
 
             if(!$departamentos){
                 throw new Exception("Nenhum departamento encontrado!");
