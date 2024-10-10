@@ -219,8 +219,10 @@ class UserController extends Controller
             'qtdeUsuariosPastores' => $usuariosPastores,
             'qtdeUsuariosAdm' => $usuariosAdm,
             'usuarios' => $usuarios, 
-            'data' => $data_hoje], 200);
-        }
+            'data' => $data_hoje
+            ],200
+        );
+    }
 
     
 }
