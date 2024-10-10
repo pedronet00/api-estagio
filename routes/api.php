@@ -111,6 +111,7 @@ use App\Http\Controllers\DizimosController;
     Route::put('/missoes/{id}', [MissoesController::class, 'update']);
     Route::patch('/missoes/{id}/ativar', [MissoesController::class, 'activate']);
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
+    Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
 
 // });
 

@@ -17,7 +17,6 @@ class MissoesController extends Controller
         return Missoes::where('idCliente', $request->idCliente)->with('pastorTitular')->get();
     }
 
-
     public function store(Request $request)
     {
         try{
@@ -146,6 +145,39 @@ class MissoesController extends Controller
         }
 
         return response()->json(['message' => 'Missão ativada com sucesso!'], 200);
+    }
+
+    public function gerarRelatorioMissoes(Request $request)
+    {
+        try{
+
+            $data_hoje = date("Y-m-d H:i");
+
+            $missoesCount = Missoes::where('idCliente', $request->idCliente)->count();
+            $missoessAtivas = Missoes::where('idCliente', $request->idCliente)->where('statusMissao', 1)->count();
+            $missoessInativas = Missoes::where('idCliente', $request->idCliente)->where('statusMissao', 0)->count();
+            $membrosCount = Missoes::where('idCliente', $request->idCliente)->sum('quantidadeMembros');
+            $missoes = Missoes::where('idCliente', $request->idCliente)->with('pastorTitular')->orderBy('nomeMissao', 'asc')->get();
+
+            if(!$missoes){
+                throw new Exception("Nenhuma missão encontrada!");
+            }
+
+        } catch(Exception $e){
+            return response()->json(['message' => $e->getMessage()]);
+        }
+
+        return response()->json([
+            'message' => 'Relatório gerado com sucesso!', 
+            'titulo' => 'Relatório das Missões da Primeira Igreja Batista de Presidente Prudente', 
+            'qtdeMissoes' => $missoesCount,
+            'qtdeMissoesAtivas' => $missoessAtivas,
+            'qtdeMissoesInativas' => $missoessInativas,
+            'qtdeMembrosMissoes' => $membrosCount,
+            'missoes' => $missoes, 
+            'data' => $data_hoje
+            ],200
+        );
     }
 
     public function destroy(string $id)
