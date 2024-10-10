@@ -174,9 +174,9 @@ class UserController extends Controller
         }
     }
 
-    public function contarUsuarios(){
+    public function contarUsuarios(Request $request){
 
-        $qtde_usuarios = User::count();
+        $qtde_usuarios = User::where('idCliente', $request->idCliente)->count();
 
         return response()->json(['quantidade_usuarios' => $qtde_usuarios]);
     }
