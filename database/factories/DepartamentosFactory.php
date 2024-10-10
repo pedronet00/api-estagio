@@ -21,7 +21,7 @@ class DepartamentosFactory extends Factory
             'textoDepartamento' => fake()->paragraph, // Gera um parágrafo de texto
             'imgDepartamento' => fake()->imageUrl(640, 480, 'business', true, 'Departamento'), // Gera uma URL de imagem fictícia
             'statusDepartamento' => fake()->numberBetween(0, 1),
-            'idCliente' => fake()->numberBetween(1,3)
+            'idCliente' => fake()->numberBetween(1,5)
         ];
     }
 }

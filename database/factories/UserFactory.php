@@ -33,7 +33,7 @@ class UserFactory extends Factory
             'nivelUsuario' => fake()->numberBetween(1, 3),
             'imgUsuario' => fake()->imageUrl(400, 400, 'people', true, 'Faker'),
             'usuarioAtivo' => fake()->boolean(),
-            'idCliente' => fake()->numberBetween(1,3)
+            'idCliente' => fake()->numberBetween(1,5)
         ];
     }
 

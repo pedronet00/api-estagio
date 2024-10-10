@@ -22,7 +22,7 @@ class MissoesFactory extends Factory
             'cidadeMissao' => fake()->words(2, true), // Gera uma URL de imagem fictícia
             'pastorTitular' => fake()->numberBetween(1, 100),
             'statusMissao' => fake()->numberBetween(0, 1),
-            'idCliente' => fake()->numberBetween(1,3)
+            'idCliente' => fake()->numberBetween(1,5)
         ];
     }
 }
