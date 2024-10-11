@@ -20,6 +20,8 @@ use App\Http\Controllers\EventosController;
 use App\Http\Controllers\LocaisController;
 use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\DizimosController;
+use App\Http\Controllers\ClassesEBDController;
+use App\Http\Controllers\AulaEBDController;
 
 
     // Usuários
@@ -33,6 +35,13 @@ use App\Http\Controllers\DizimosController;
     Route::get('/userCount', [UserController::class, 'contarUsuarios']);
     Route::get('/userReport', [UserController::class, 'gerarRelatorioUsuarios']);
 
+    // Aulas EBD
+    Route::get('/aulaEBD', [AulaEBDController::class, 'index']);
+    Route::post('/aulaEBD', [AulaEBDController::class, 'store']);
+
+    // Classes EBD
+    Route::get('/classesEBD', [ClassesEBDController::class, 'index']);
+    Route::post('/classesEBD', [ClassesEBDController::class, 'store']);
 
     // Dízimos
     Route::get('/dizimos', [DizimosController::class, 'index']);
