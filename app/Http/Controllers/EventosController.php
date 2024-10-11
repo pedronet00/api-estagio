@@ -22,7 +22,7 @@ class EventosController extends Controller
             ->where('dataEvento', '>=', $hoje) // Filtra eventos com data igual ou posterior à data atual
             ->with(['local']) // Carrega a relação com 'local'
             ->orderBy('dataEvento') // Ordena os eventos pela data
-            ->take(5) // Limita a 5 eventos
+            ->take(3) // Limita a 5 eventos
             ->get();
     }
 
