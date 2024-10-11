@@ -21,7 +21,7 @@ class RecursosFactory extends Factory
             'tipoRecurso' => fake()->numberBetween(1, 10), // Gera um parágrafo de texto
             'categoriaRecurso' => fake()->numberBetween(1, 6), // Gera uma URL de imagem fictícia
             'quantidadeRecurso' => fake()->numberBetween(0, 100),
-            'idCliente' => fake()->numberBetween(1,2)
+            'idCliente' => fake()->numberBetween(1,5)
         ];
     }
 }
