@@ -56,6 +56,7 @@ use App\Http\Controllers\AulaEBDController;
     Route::post('/eventos', [EventosController::class, 'store']);
     Route::get('/eventos/{id}', [EventosController::class, 'show']);
     Route::put('/eventos/{id}', [EventosController::class, 'update']);
+    Route::get('/proximosEventos', [EventosController::class, 'listandoProximosEventos']);
 
 
     // Recurso

@@ -14,6 +14,18 @@ class EventosController extends Controller
         return Eventos::where('idCliente', $request->idCliente)->with(['local'])->get();
     }
 
+    public function listandoProximosEventos(Request $request)
+    {
+        $hoje = now(); // Obtém a data atual
+
+        return Eventos::where('idCliente', $request->idCliente)
+            ->where('dataEvento', '>=', $hoje) // Filtra eventos com data igual ou posterior à data atual
+            ->with(['local']) // Carrega a relação com 'local'
+            ->orderBy('dataEvento') // Ordena os eventos pela data
+            ->take(5) // Limita a 5 eventos
+            ->get();
+    }
+
     
     public function store(Request $request)
     {
