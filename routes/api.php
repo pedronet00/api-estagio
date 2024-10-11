@@ -22,6 +22,8 @@ use App\Http\Controllers\ClientesController;
 use App\Http\Controllers\DizimosController;
 use App\Http\Controllers\ClassesEBDController;
 use App\Http\Controllers\AulaEBDController;
+use App\Http\Controllers\LivrosController;
+
 
 
     // Usuários
@@ -34,6 +36,12 @@ use App\Http\Controllers\AulaEBDController;
     Route::patch('/activateUser/{id}', [UserController::class, 'activate']);
     Route::get('/userCount', [UserController::class, 'contarUsuarios']);
     Route::get('/userReport', [UserController::class, 'gerarRelatorioUsuarios']);
+
+    // Livros
+    Route::get('/livros', [LivrosController::class, 'index']);
+    Route::post('/livros', [LivrosController::class, 'store']);
+    Route::get('/livros/{id}/download', [LivrosController::class, 'download']);
+
 
     // Aulas EBD
     Route::get('/aulaEBD', [AulaEBDController::class, 'index']);
