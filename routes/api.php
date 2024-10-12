@@ -40,6 +40,10 @@ use App\Http\Controllers\SaidasController;
     Route::get('/userCount', [UserController::class, 'contarUsuarios']);
     Route::get('/userReport', [UserController::class, 'gerarRelatorioUsuarios']);
 
+    // Finanças
+    Route::get('/financas/saldo-mensal', [FinancasController::class, 'saldoMensal']);
+    Route::get('/financas/entradasSaidasMensal', [FinancasController::class, 'entradasSaidasMensais']);
+
     // Entradas
     Route::get('/entradas', [EntradasController::class, 'index']);
     Route::post('/entradas', [EntradasController::class, 'store']);
