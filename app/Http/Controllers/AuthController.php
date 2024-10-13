@@ -30,9 +30,14 @@ class AuthController extends Controller
         if ($cliente && Hash::check($data['password'], $cliente->password)) {
             // Login bem-sucedido para cliente
 
+            $idCliente = $cliente->id;
+            $razaoSocial = $cliente->razaoSocialCliente;
+
             return response()->json([
                 'message' => 'Logado com sucesso como cliente!',
                 'user' => $cliente,
+                'idCliente' => $idCliente,
+                'razaoSocial' => $razaoSocial,
                 'nivelUsuario' => 4 // Nível de usuário para clientes
             ]);
         }
@@ -44,9 +49,17 @@ class AuthController extends Controller
         if ($user && Hash::check($data['password'], $user->password)) {
             // Login bem-sucedido para usuário
 
+            $idCliente = $user->idCliente;
+
+            $cliente = Clientes::find($idCliente);
+
+            $razaoSocial = $cliente->razaoSocialCliente;
+
             return response()->json([
                 'message' => 'Logado com sucesso como usuário!',
                 'user' => $user,
+                'idCliente' => $idCliente,
+                'razaoSocial' => $razaoSocial,
                 'nivelUsuario' => $user->nivelUsuario // Nível de usuário do usuário
             ]);
         }
