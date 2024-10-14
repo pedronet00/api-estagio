@@ -81,6 +81,7 @@ use App\Http\Controllers\SaidasController;
     Route::get('/eventos/{id}', [EventosController::class, 'show']);
     Route::put('/eventos/{id}', [EventosController::class, 'update']);
     Route::get('/proximosEventos', [EventosController::class, 'listandoProximosEventos']);
+    Route::get('/eventosReport', [EventosController::class, 'gerarRelatorioEventos']);
 
 
     // Recurso

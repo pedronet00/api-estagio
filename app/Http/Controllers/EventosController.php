@@ -97,9 +97,58 @@ class EventosController extends Controller
         return response()->json(['message' => "Evento editado com sucesso!", 'evento' => $evento]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function gerarRelatorioEventos(Request $request)
+{
+    $idCliente = $request->idCliente;
+
+    $eventos = Eventos::where('idCliente', $idCliente)->get();
+
+    // Contar a quantidade de eventos para o cliente
+    $quantidadeEventos = Eventos::where('idCliente', $idCliente)->count();
+
+    // Obter o evento mais caro de acordo com a coluna 'orcamentoEvento'
+    $eventoMaisCaro = Eventos::where('idCliente', $idCliente)
+        ->orderBy('orcamentoEvento', 'desc')
+        ->first();
+
+    // Obter o ano atual
+    $anoAtual = date('Y');
+
+    // Contar a quantidade de eventos por mês no ano atual
+    $eventosPorMes = Eventos::where('idCliente', $idCliente)
+        ->whereYear('dataEvento', $anoAtual)
+        ->selectRaw('MONTH(dataEvento) as mes, COUNT(*) as total')
+        ->groupBy('mes')
+        ->orderBy('total', 'desc')
+        ->get();
+
+    // Identificar o mês com mais eventos
+    $mesComMaisEventos = $eventosPorMes->first(); // O primeiro será o mês com mais eventos
+
+    // Nome dos meses para exibição
+    $nomeMeses = [
+        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
+        5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
+        9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+    ];
+
+    return response()->json([
+        'eventos' => $eventos,
+        'quantidadeEventos' => $quantidadeEventos,
+        'eventoMaisCaro' => $eventoMaisCaro ? [
+            'titulo' => $eventoMaisCaro->nomeEvento,
+            'orcamento' => $eventoMaisCaro->orcamentoEvento,
+            'data' => $eventoMaisCaro->dataEvento
+        ] : null,
+        'mesComMaisEventos' => $mesComMaisEventos ? [
+            'mes' => $nomeMeses[$mesComMaisEventos->mes],
+            'totalEventos' => $mesComMaisEventos->total
+        ] : null
+    ]);
+}
+
+    
+
     public function destroy(string $id)
     {
         //
