@@ -14,28 +14,9 @@ class NivelUsuarioController extends Controller
      */
     public function index(Request $request)
     {
-        return NivelUsuario::where('idCliente', $request->idCliente)->get();
+        return NivelUsuario::all();
     }
 
-    public function store(Request $request)
-    {
-        try{
-
-            if(!$request->nivelUsuario){
-                throw new Exception("Você deve preencher o nível do usuário!");
-            }
-
-            $nivelUsuario = NivelUsuario::create([
-                'nivelUsuario' => $request->nivelUsuario,
-                'idCliente' => $request->idCliente
-            ]);
-                        
-        } catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-
-        return response()->json(['message'=> 'Nível de usuário criado com sucesso!', 'nivelUser' => $nivelUsuario], 201);
-    }
 
     public function show(string $id)
     {
