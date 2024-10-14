@@ -39,9 +39,10 @@ class FinancasController extends Controller
         // Obter o ano atual
         $anoAtual = date('Y');
 
-        // Inicializar arrays para armazenar entradas e saídas por mês
+        // Inicializar arrays para armazenar entradas, saídas e saldos por mês
         $entradasPorMes = [];
         $saidasPorMes = [];
+        $saldosPorMes = [];
         $nomeMeses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -60,14 +61,19 @@ class FinancasController extends Controller
                 ->whereMonth('data', $mes)
                 ->sum('valor'); // Altere 'valor' para o campo que contém o valor da saída
 
+            // Calcular o saldo do mês (entradas - saídas)
+            $saldo = $entradas - $saidas;
+
             // Armazenar os valores nos arrays
             $entradasPorMes[$mes] = $entradas;
             $saidasPorMes[$mes] = $saidas;
+            $saldosPorMes[$mes] = $saldo; // Adiciona o saldo ao array de saldos
         }
 
         return response()->json([
             'entradas' => $entradasPorMes,
             'saidas' => $saidasPorMes,
+            'saldos' => $saldosPorMes, // Retorna o saldo por mês
             'meses' => $nomeMeses
         ]);
     }
@@ -85,9 +91,10 @@ class FinancasController extends Controller
         // Obtendo o saldo mensal atual
         $saldoMensal = Financas::calcularSaldoMensal($idCliente);
 
-        // Inicializando arrays para armazenar entradas e saídas por mês
+        // Inicializando arrays para armazenar entradas, saídas e saldos por mês
         $entradasPorMes = [];
         $saidasPorMes = [];
+        $saldosPorMes = []; // Novo array para armazenar o saldo de cada mês
         $nomeMeses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -109,9 +116,13 @@ class FinancasController extends Controller
                 ->whereMonth('data', $mes)
                 ->sum('valor'); // Altere 'valor' para o campo correto
 
+            // Calcular o saldo do mês (entradas - saídas)
+            $saldo = $entradas - $saidas;
+
             // Armazenar os valores nos arrays
             $entradasPorMes[$mes] = $entradas;
             $saidasPorMes[$mes] = $saidas;
+            $saldosPorMes[$mes] = $saldo; // Armazenar o saldo calculado no array de saldos
         }
 
         // Identificar o mês com mais entradas e mais saídas
@@ -121,11 +132,12 @@ class FinancasController extends Controller
         $mesMaiorSaida = array_keys($saidasPorMes, max($saidasPorMes))[0]; // Retorna o mês com maior saída
         $valorMaiorSaida = max($saidasPorMes); // Retorna o valor da maior saída
 
-        // Retornar os dados em formato JSON
+        // Retornar os dados em formato JSON, incluindo o saldo por mês
         return response()->json([
             'saldoMensalAtual' => $saldoMensal,
             'entradas' => $entradasPorMes,
             'saidas' => $saidasPorMes,
+            'saldos' => $saldosPorMes, // Retornar o saldo por mês
             'mesMaiorEntrada' => [
                 'mes' => $nomeMeses[$mesMaiorEntrada - 1], // Converter o índice do mês
                 'valor' => $valorMaiorEntrada
@@ -137,6 +149,7 @@ class FinancasController extends Controller
             'meses' => $nomeMeses
         ]);
     }
+
 
     
 }
