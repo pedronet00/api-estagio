@@ -43,6 +43,7 @@ use App\Http\Controllers\SaidasController;
     // Finanças
     Route::get('/financas/saldo-mensal', [FinancasController::class, 'saldoMensal']);
     Route::get('/financas/entradasSaidasMensal', [FinancasController::class, 'entradasSaidasMensais']);
+    Route::get('/financasReport', [FinancasController::class, 'gerarRelatorioFinancas']);
 
     // Entradas
     Route::get('/entradas', [EntradasController::class, 'index']);
