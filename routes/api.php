@@ -28,7 +28,7 @@ use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\SaidasController;
 
 
-
+Route::middleware('auth:sanctum')->group(function () {
     // Usuários
     Route::get('/user', [UserController::class, 'index']);
     Route::get('/user/{id}', [UserController::class, 'show']);
@@ -147,10 +147,11 @@ use App\Http\Controllers\SaidasController;
     Route::patch('/missoes/{id}/ativar', [MissoesController::class, 'activate']);
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
     Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
-
+    
     // Clientes
     Route::get('/clientes', [ClientesController::class, 'index']);
     Route::post('/clientes', [ClientesController::class, 'store']);
+});
 
     // Auth
     Route::post('/register', [AuthController::class, 'register']);

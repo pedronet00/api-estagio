@@ -23,62 +23,58 @@ class AuthController extends Controller
             'password' => ['required', 'min:6']
         ]);
 
-        // Tente encontrar o cliente com o e-mail fornecido
+        // Autenticar cliente
         $cliente = Clientes::where('email', $data['email'])->first();
 
-        // Verifica se um cliente foi encontrado
         if ($cliente && Hash::check($data['password'], $cliente->password)) {
-            // Login bem-sucedido para cliente
-
-            $idCliente = $cliente->id;
-            $razaoSocial = $cliente->razaoSocialCliente;
+            // Gerar token de autenticação para o cliente
+            $token = $cliente->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Logado com sucesso como cliente!',
                 'user' => $cliente,
-                'idCliente' => $idCliente,
-                'razaoSocial' => $razaoSocial,
+                'token' => $token,
+                'idCliente' => $cliente->id,
                 'nivelUsuario' => 4 // Nível de usuário para clientes
             ]);
         }
 
-        // Se não encontrar um cliente, tente encontrar um usuário
+        // Autenticar usuário
         $user = User::where('email', $data['email'])->first();
 
-        // Verifica se um usuário foi encontrado
         if ($user && Hash::check($data['password'], $user->password)) {
-            // Login bem-sucedido para usuário
-
-            $idCliente = $user->idCliente;
-
-            $cliente = Clientes::find($idCliente);
-
-            $razaoSocial = $cliente->razaoSocialCliente;
+            // Gerar token de autenticação para o usuário
+            $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Logado com sucesso como usuário!',
                 'user' => $user,
-                'idCliente' => $idCliente,
-                'razaoSocial' => $razaoSocial,
+                'token' => $token,
+                'idCliente' => $user->idCliente,
                 'nivelUsuario' => $user->nivelUsuario // Nível de usuário do usuário
             ]);
         }
 
-        // Se nenhum cliente ou usuário foi autenticado
-        return response()->json([
-            'message' => 'Credenciais inválidas',
-        ], 401);
+        return response()->json(['message' => 'Credenciais inválidas'], 401);
     }
+
 
 
 
     public function register(Request $request)
     {
-        $validatedData = $request->validate([
-            'razaoSocialCliente' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:clientes',
-            'password' => 'required|string|min:6',
-        ]);
+        
+        try {
+            $validatedData = $request->validate([
+                'razaoSocialCliente' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:clientes',
+                'password' => 'required|string|min:6',
+            ]);
+    
+    
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
+        }
 
         try {
             $cliente = Clientes::create([
