@@ -34,6 +34,7 @@ class AuthController extends Controller
                 'message' => 'Logado com sucesso como cliente!',
                 'user' => $cliente,
                 'token' => $token,
+                'razaoSocial' => $cliente->razaoSocialCliente,
                 'idCliente' => $cliente->id,
                 'nivelUsuario' => 4 // Nível de usuário para clientes
             ]);
@@ -46,10 +47,14 @@ class AuthController extends Controller
             // Gerar token de autenticação para o usuário
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            $cliente = Clientes::find($user->idCliente);
+            $razaoSocial = $cliente->razaoSocialCliente;
+
             return response()->json([
                 'message' => 'Logado com sucesso como usuário!',
                 'user' => $user,
                 'token' => $token,
+                'razaoSocial' => $razaoSocial,
                 'idCliente' => $user->idCliente,
                 'nivelUsuario' => $user->nivelUsuario // Nível de usuário do usuário
             ]);

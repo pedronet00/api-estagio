@@ -123,9 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'routeMiddleware' => [
-        'tenant' => \Stancl\Tenancy\Http\Middleware\InitializeTenancyByDomain::class,
-    ],
+    
     
 
 ];
