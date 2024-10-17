@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AulaEBD;
+use App\Models\ClassesEBD;
 use Exception;
 
 class AulaEBDController extends Controller
@@ -33,6 +34,47 @@ class AulaEBDController extends Controller
         }
 
         return response()->json(['message' => 'Aula cadastrada com sucesso!', 'aula' => $aula], 200);
+    }
+
+    public function gerarRelatorioEBD(Request $request){
+
+        $idCliente = $request->idCliente;
+
+        try{
+            $qtdeAulas = AulaEBD::where('idCliente', $idCliente)->count();
+
+            if($qtdeAulas == 0){
+                throw new Exception("Não existe nenhuma aula cadastrada. Você não pode gerar um relatório enquanto não cadastrar uma aula.");
+            }
+
+            $qtdeClasses = ClassesEBD::where('idCliente', $idCliente)->count();
+            $soma_presentes = AulaEBD::where('idCliente', $idCliente)->sum('quantidadePresentes');
+            $mediaAlunos = $soma_presentes / $qtdeAulas;
+
+            $professorMaisFrequente = AulaEBD::select('professorAula', \DB::raw('count(*) as total'))
+            ->where('idCliente', $request->idCliente)
+            ->groupBy('professorAula')
+            ->with('professor')
+            ->orderBy('total', 'desc')
+            ->first();
+
+            $aulas = AulaEBD::where('idCliente', $idCliente)->with('classe', 'professor')->get();
+
+        } catch(Exception $e){
+            return response()->json([
+                'message' => 'Erro!',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Sucesso!',
+            'qtdeAulas' => $qtdeAulas,
+            'qtdeClasses' => $qtdeClasses,
+            'mediaAlunos' => $mediaAlunos,
+            'professorMaisFrequente' => $professorMaisFrequente,
+            'aulas' => $aulas
+        ]);
     }
 
     /**

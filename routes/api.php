@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Aulas EBD
     Route::get('/aulaEBD', [AulaEBDController::class, 'index']);
     Route::post('/aulaEBD', [AulaEBDController::class, 'store']);
+    Route::get('/ebdReport', [AulaEBDController::class, 'gerarRelatorioEBD']);
 
     // Classes EBD
     Route::get('/classesEBD', [ClassesEBDController::class, 'index']);
