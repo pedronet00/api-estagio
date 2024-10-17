@@ -14,7 +14,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // Pega o idCliente da requisição
-        $idCliente = $request->query('idCliente');
+        $idCliente = $request->idCliente;
 
         // Verifica se o idCliente foi passado
         if ($idCliente) {

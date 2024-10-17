@@ -59,8 +59,7 @@ class DizimosController extends Controller
 
     public function gerarRelatorioDizimos(Request $request)
     {
-
-        try{
+        try {
             $idCliente = $request->idCliente;
 
             $entradasPorMes = [];
@@ -71,23 +70,44 @@ class DizimosController extends Controller
 
             $anoAtual = date('Y');
 
-            $dizimos = Dizimos::where('idCliente', $idCliente)->get();
+            $dizimos = Dizimos::where('idCliente', $idCliente)->orderBy('dataCulto', 'asc')->get();
 
-            if($dizimos == "[]"){
+            $cultoMaiorValorDizimo = Dizimos::where('idCliente', $idCliente)->orderBy('valorArrecadado', 'desc')->first();
+            $cultoMenorValorDizimo = Dizimos::where('idCliente', $idCliente)->orderBy('valorArrecadado', 'asc')->first();
+
+            if ($dizimos->isEmpty()) {
                 throw new Exception("Não há registros de dízimos.");
             }
 
             for ($mes = 1; $mes <= 12; $mes++) {
-                // Somar as entradas e saídas do mês atual
+                // Somar as entradas do mês atual
                 $entradas = Dizimos::where('idCliente', $idCliente)
                     ->whereYear('dataCulto', $anoAtual)
                     ->whereMonth('dataCulto', $mes)
-                    ->sum('valorArrecadado'); // Altere 'valor' para o campo correto
+                    ->where('valorArrecadado', '>', 0)
+                    ->sum('valorArrecadado');
 
                 // Armazenar os valores nos arrays
                 $entradasPorMes[$mes] = $entradas;
             }
-        } catch(Exception $e){
+
+            // Filtrar os meses com valores maiores que 0
+            $entradasFiltradas = array_filter($entradasPorMes, function ($valor) {
+                return $valor > 0;
+            });
+
+            // Verificar se existem entradas válidas
+            if (empty($entradasFiltradas)) {
+                throw new Exception("Não há entradas com valores maiores que 0.");
+            }
+
+            $mesMaiorEntrada = array_keys($entradasFiltradas, max($entradasFiltradas))[0]; // Retorna o mês com maior entrada
+            $valorMaiorEntrada = max($entradasFiltradas); // Retorna o valor da maior entrada
+
+            $mesMenorEntrada = array_keys($entradasFiltradas, min($entradasFiltradas))[0]; // Retorna o mês com menor entrada
+            $valorMenorEntrada = min($entradasFiltradas); // Retorna o valor da menor entrada
+
+        } catch (Exception $e) {
             return response()->json([
                 'message' => "Erro!",
                 'error' => $e->getMessage()
@@ -96,10 +116,21 @@ class DizimosController extends Controller
 
         return response()->json([
             'message' => 'Sucesso!',
-            'entradas' => $entradas,
-            'dizimos' => $dizimos,
+            'entradas' => $entradasPorMes,
+            'cultoMaiorValorArrecadado' => $cultoMaiorValorDizimo,
+            'cultoMenorValorArrecadado' => $cultoMenorValorDizimo,
+            'mesMaiorEntrada' => [
+                'mes' => $nomeMeses[$mesMaiorEntrada - 1], // Converter o índice do mês
+                'valor' => $valorMaiorEntrada
+            ],
+            'mesMenorEntrada' => [
+                'mes' => $nomeMeses[$mesMenorEntrada - 1], // Converter o índice do mês
+                'valor' => $valorMenorEntrada
+            ],
+            'dizimos' => $dizimos
         ]);
     }
+
 
     /**
      * Display the specified resource.
