@@ -154,6 +154,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store']);
 });
 
+    Route::get('/dizimosReport', [DizimosController::class, 'gerarRelatorioDizimos']);
+
     // Auth
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

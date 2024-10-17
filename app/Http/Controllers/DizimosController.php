@@ -57,6 +57,50 @@ class DizimosController extends Controller
     }
 
 
+    public function gerarRelatorioDizimos(Request $request)
+    {
+
+        try{
+            $idCliente = $request->idCliente;
+
+            $entradasPorMes = [];
+            $nomeMeses = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+
+            $anoAtual = date('Y');
+
+            $dizimos = Dizimos::where('idCliente', $idCliente)->get();
+
+            if($dizimos == "[]"){
+                throw new Exception("Não há registros de dízimos.");
+            }
+
+            for ($mes = 1; $mes <= 12; $mes++) {
+                // Somar as entradas e saídas do mês atual
+                $entradas = Dizimos::where('idCliente', $idCliente)
+                    ->whereYear('dataCulto', $anoAtual)
+                    ->whereMonth('dataCulto', $mes)
+                    ->sum('valorArrecadado'); // Altere 'valor' para o campo correto
+
+                // Armazenar os valores nos arrays
+                $entradasPorMes[$mes] = $entradas;
+            }
+        } catch(Exception $e){
+            return response()->json([
+                'message' => "Erro!",
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Sucesso!',
+            'entradas' => $entradas,
+            'dizimos' => $dizimos,
+        ]);
+    }
+
     /**
      * Display the specified resource.
      */
