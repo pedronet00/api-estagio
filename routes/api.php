@@ -26,7 +26,7 @@ use App\Http\Controllers\LivrosController;
 use App\Http\Controllers\FinancasController;
 use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\SaidasController;
-use App\Http\Controllers\OnBoardingController;
+use App\Http\Controllers\DashboardController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -156,9 +156,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store']);
     
     
-    Route::get('/onboardingData', [OnBoardingController::class, 'index']);
 });
 
+Route::get('/dashboardData', [DashboardController::class, 'index']);
 
     // Auth
     Route::post('/register', [AuthController::class, 'register']);
