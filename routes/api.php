@@ -26,6 +26,7 @@ use App\Http\Controllers\LivrosController;
 use App\Http\Controllers\FinancasController;
 use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\SaidasController;
+use App\Http\Controllers\OnBoardingController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -148,13 +149,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/missoes/{id}/ativar', [MissoesController::class, 'activate']);
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
     Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
+    Route::get('/dizimosReport', [DizimosController::class, 'gerarRelatorioDizimos']);
     
     // Clientes
     Route::get('/clientes', [ClientesController::class, 'index']);
     Route::post('/clientes', [ClientesController::class, 'store']);
+    
+    
+    Route::get('/onboardingData', [OnBoardingController::class, 'index']);
 });
 
-    Route::get('/dizimosReport', [DizimosController::class, 'gerarRelatorioDizimos']);
 
     // Auth
     Route::post('/register', [AuthController::class, 'register']);
