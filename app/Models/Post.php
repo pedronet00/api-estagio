@@ -19,7 +19,8 @@ class Post extends Model
         'textoPost',
         'imgPost',
         'tipoPost',
-        'statusPost'
+        'statusPost',
+        'idCliente'
     ];
 
     public function autor()

@@ -34,6 +34,7 @@ class DizimosController extends Controller
 
             $existingDizimo = Dizimos::where('dataCulto', $request->dataCulto)
                 ->where('turnoCulto', $request->turnoCulto)
+                ->where('idCliente', $request->idCliente)
                 ->first();
 
             if ($existingDizimo) {

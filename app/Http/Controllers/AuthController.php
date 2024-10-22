@@ -36,6 +36,7 @@ class AuthController extends Controller
                 'token' => $token,
                 'razaoSocial' => $cliente->razaoSocialCliente,
                 'idCliente' => $cliente->id,
+                'idUsuario' => $cliente->id,
                 'nivelUsuario' => 4 // Nível de usuário para clientes
             ]);
         }
@@ -56,6 +57,7 @@ class AuthController extends Controller
                 'token' => $token,
                 'razaoSocial' => $razaoSocial,
                 'idCliente' => $user->idCliente,
+                'idUsuario' => $user->id,
                 'nivelUsuario' => $user->nivelUsuario // Nível de usuário do usuário
             ]);
         }

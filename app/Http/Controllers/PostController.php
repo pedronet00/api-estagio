@@ -11,9 +11,9 @@ use Exception;
 class PostController extends Controller
 {
    
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::with(['autor:id,name', 'tipo:id,tipoPost'])->get();
+        $posts = Post::with(['autor:id,name', 'tipo:id,tipoPost'])->where('idCliente', $request->idCliente)->get();
 
         return response()->json($posts);
     }
@@ -90,6 +90,7 @@ class PostController extends Controller
                 'imgPost' => $request->imgPost,
                 'tipoPost' => $request->tipoPost,
                 'statusPost' => true,
+                'idCliente' => $request->idCliente
                 
             ]);
 

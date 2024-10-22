@@ -102,15 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tipoRecurso', [TipoRecursoController::class, 'store']);
 
     // Posts
-    Route::get('/post', [PostController::class, 'index']);
-    Route::post('/post', [PostController::class, 'store']);
-    Route::get('/post/{id}', [PostController::class, 'show']);
-    Route::put('/post/{id}', [PostController::class, 'update']);
-    Route::patch('/post/{id}/desativar', [PostController::class, 'deactivate']);
-    Route::patch('/post/{id}/ativar', [PostController::class, 'activate']);
-    Route::get('/gerarRelatorioPosts', [PostController::class, 'gerarRelatorioPosts']);
-    Route::get('/posts/pesquisar', [PostController::class, 'search']);
-
+    
     // Departamentos
     Route::get('/departamentos', [DepartamentosController::class, 'index']);
     Route::post('/departamentos', [DepartamentosController::class, 'store']);
@@ -120,13 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/departamento/{id}/ativar', [DepartamentosController::class, 'activate']);
     Route::get('/departamentoReport', [DepartamentosController::class, 'gerarRelatorioDepartamentos']);
 
-    // Tipo Post 
-    Route::get('/tipoPost', [TipoPostController::class, 'index']); 
-    Route::post('/tipoPost', [TipoPostController::class, 'store']); 
-    Route::get('/tipoPost/{id}', [TipoPostController::class, 'show']); 
-    Route::put('/tipoPost/{id}', [TipoPostController::class, 'update']); 
-    Route::delete('/tipoPost/{id}', [TipoPostController::class, 'destroy']); 
-
+    
     // Boletim
     Route::get('/boletim', [BoletinsController::class, 'index']);
     Route::post('/boletim', [BoletinsController::class, 'store']);
@@ -134,13 +120,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/boletim/{id}', [BoletinsController::class, 'update']);
     Route::delete('/boletim/{id}', [BoletinsController::class, 'destroy']);
     Route::get('/boletins/pesquisar', [BoletinsController::class, 'search']);
-
+    
     // Nivel Usuario
     Route::get('/nivelUsuario', [NivelUsuarioController::class, 'index']);
     Route::post('/nivelUsuario', [NivelUsuarioController::class, 'store']);
     Route::get('/nivelUsuario/{id}', [NivelUsuarioController::class, 'show']);
     Route::put('/nivelUsuario/{id}', [NivelUsuarioController::class, 'update']);
-
+    
     // Missões
     Route::get('/missoes', [MissoesController::class, 'index']);
     Route::post('/missoes', [MissoesController::class, 'store']);
@@ -150,17 +136,31 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
     Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
     Route::get('/dizimosReport', [DizimosController::class, 'gerarRelatorioDizimos']);
+    Route::get('/dashboardData', [DashboardController::class, 'index']);
     
     // Clientes
-    Route::get('/clientes', [ClientesController::class, 'index']);
     Route::post('/clientes', [ClientesController::class, 'store']);
     
     
 });
+Route::get('/clientes', [ClientesController::class, 'index']);
 
-Route::get('/dashboardData', [DashboardController::class, 'index']);
 
-    // Auth
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+Route::get('/post', [PostController::class, 'index']);
+Route::post('/post', [PostController::class, 'store']);
+Route::get('/post/{id}', [PostController::class, 'show']);
+Route::put('/post/{id}', [PostController::class, 'update']);
+Route::patch('/post/{id}/desativar', [PostController::class, 'deactivate']);
+Route::patch('/post/{id}/ativar', [PostController::class, 'activate']);
+Route::get('/gerarRelatorioPosts', [PostController::class, 'gerarRelatorioPosts']);
+Route::get('/posts/pesquisar', [PostController::class, 'search']);
+// Tipo Post 
+Route::get('/tipoPost', [TipoPostController::class, 'index']); 
+Route::post('/tipoPost', [TipoPostController::class, 'store']); 
+Route::get('/tipoPost/{id}', [TipoPostController::class, 'show']); 
+Route::put('/tipoPost/{id}', [TipoPostController::class, 'update']); 
+Route::delete('/tipoPost/{id}', [TipoPostController::class, 'destroy']); 
+// Auth
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);

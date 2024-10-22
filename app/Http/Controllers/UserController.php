@@ -63,7 +63,7 @@ class UserController extends Controller
             return response()->json(['error' => 'Erro ao criar usuário: ' . $e->getMessage()], 500);
         }
 
-        return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 201);
+        return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 200);
     }
 
     public function show(string $id)
