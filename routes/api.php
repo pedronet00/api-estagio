@@ -73,34 +73,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dizimos', [DizimosController::class, 'index']);
     Route::post('/dizimos', [DizimosController::class, 'store']);
 
-    // Locais
-    Route::get('/locais', [LocaisController::class, 'index']);
-    Route::post('/locais', [LocaisController::class, 'store']);
-
-    // Eventos
-    Route::get('/eventos', [EventosController::class, 'index']);
-    Route::post('/eventos', [EventosController::class, 'store']);
-    Route::get('/eventos/{id}', [EventosController::class, 'show']);
-    Route::put('/eventos/{id}', [EventosController::class, 'update']);
-    Route::get('/proximosEventos', [EventosController::class, 'listandoProximosEventos']);
-    Route::get('/eventosReport', [EventosController::class, 'gerarRelatorioEventos']);
-
-
+    
+    
+    
     // Recurso
     Route::get('/recurso', [RecursoController::class, 'index']);
     Route::post('/recurso', [RecursoController::class, 'store']);
     Route::patch('/recurso/{id}/diminuirQuantidade', [RecursoController::class, 'diminuirQuantidade']);
     Route::patch('/recurso/{id}/aumentarQuantidade', [RecursoController::class, 'aumentarQuantidade']);
     Route::get('/recursoReport', [RecursoController::class, 'gerarRelatorioRecursos']);
-
+    
     // Categoria Recurso
     Route::get('/categoriaRecurso', [CategoriaRecursoController::class, 'index']);
     Route::post('/categoriaRecurso', [CategoriaRecursoController::class, 'store']);
-
+    
     // Tipo Recurso
     Route::get('/tipoRecurso', [TipoRecursoController::class, 'index']);
     Route::post('/tipoRecurso', [TipoRecursoController::class, 'store']);
-
+    
     // Posts
     
     // Departamentos
@@ -111,7 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/departamento/{id}/desativar', [DepartamentosController::class, 'deactivate']);
     Route::patch('/departamento/{id}/ativar', [DepartamentosController::class, 'activate']);
     Route::get('/departamentoReport', [DepartamentosController::class, 'gerarRelatorioDepartamentos']);
-
+    
     
     // Boletim
     Route::get('/boletim', [BoletinsController::class, 'index']);
@@ -142,9 +132,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/clientes', [ClientesController::class, 'store']);
     
     
+    
+    
+    
 });
+// Eventos
+Route::get('/eventos', [EventosController::class, 'index']);
+Route::post('/eventos', [EventosController::class, 'store']);
+Route::get('/eventos/{id}', [EventosController::class, 'show']);
+Route::delete('/eventos/{id}', [EventosController::class, 'destroy']);
+Route::put('/eventos/{id}', [EventosController::class, 'update']);
+Route::get('/proximosEventos', [EventosController::class, 'listandoProximosEventos']);
+Route::get('/eventosReport', [EventosController::class, 'gerarRelatorioEventos']);
 Route::get('/clientes', [ClientesController::class, 'index']);
-
+// Locais
+Route::get('/locais', [LocaisController::class, 'index']);
+Route::post('/locais', [LocaisController::class, 'store']);
+Route::get('/locais/{id}', [LocaisController::class, 'show']);
+Route::put('/locais/{id}', [LocaisController::class, 'update']);
+Route::delete('/locais/{id}', [LocaisController::class, 'destroy']);
 
 Route::get('/post', [PostController::class, 'index']);
 Route::post('/post', [PostController::class, 'store']);
@@ -154,13 +160,16 @@ Route::patch('/post/{id}/desativar', [PostController::class, 'deactivate']);
 Route::patch('/post/{id}/ativar', [PostController::class, 'activate']);
 Route::get('/gerarRelatorioPosts', [PostController::class, 'gerarRelatorioPosts']);
 Route::get('/posts/pesquisar', [PostController::class, 'search']);
+
+
 // Tipo Post 
 Route::get('/tipoPost', [TipoPostController::class, 'index']); 
 Route::post('/tipoPost', [TipoPostController::class, 'store']); 
 Route::get('/tipoPost/{id}', [TipoPostController::class, 'show']); 
 Route::put('/tipoPost/{id}', [TipoPostController::class, 'update']); 
 Route::delete('/tipoPost/{id}', [TipoPostController::class, 'destroy']); 
+
 // Auth
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/logout', [AuthController::class, 'logout']);

@@ -80,7 +80,7 @@ class AuthController extends Controller
     
     
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
+            return response()->json(['message' => 'Erro de validação: ', 'errors' => $e->errors()], 422);
         }
 
         try {

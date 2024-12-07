@@ -44,7 +44,9 @@ class LocaisController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $local = Locais::findOrFail($id);
+
+        return $local;
     }
 
 
@@ -54,14 +56,29 @@ class LocaisController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $local = Locais::findOrFail($id);
+
+        $local->nomeLocal = $request->has('nomeLocal') ? $request->nomeLocal : $local->nomeLocal;
+        $local->statusLocal = $request->has('statusLocal') ? $request->statusLocal : $local->statusLocal;
+        $local->save();
+
+        return response()->json([
+            'message' => 'Sucesso!',
+            'local' => $local
+        ]);
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        $local = Locais::findOrFail($id);
+        $local->delete();
+
+        return response()->json([
+            'message' => 'Local deletado com sucesso!'
+        ]);
     }
 }

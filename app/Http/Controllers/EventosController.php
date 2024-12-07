@@ -28,25 +28,36 @@ class EventosController extends Controller
 
     
     public function store(Request $request)
-    {
-        try{
+{
+    try {
+        // Validando se já existe um evento no mesmo local e data
+        $eventoExistente = Eventos::where('localEvento', $request->localEvento)
+            ->where('dataEvento', $request->dataEvento)
+            ->first();
 
-            $evento = Eventos::create([
-                "nomeEvento" => $request->nomeEvento,
-                "descricaoEvento" => $request->descricaoEvento,
-                "dataEvento" => $request->dataEvento,
-                "localEvento" => $request->localEvento,
-                "prioridadeEvento" => $request->prioridadeEvento,
-                "orcamentoEvento" => $request->orcamentoEvento,
-                "idCliente" => $request->idCliente
-            ]);
-
-        } catch(Exception $e){
-            return response()->json(['error' => 'Ocorreu um erro ao salvar o evento.'], 500);
+        // Se já existir, lançar uma exceção
+        if ($eventoExistente) {
+            return response()->json(['error' => 'O local já está ocupado nesta data.'], 400);
         }
 
-        return response()->json(['message' => 'O evento foi salvo com sucesso!', 'evento' => $evento], 201);
+        // Se não existir, prosseguir para criar o novo evento
+        $evento = Eventos::create([
+            "nomeEvento" => $request->nomeEvento,
+            "descricaoEvento" => $request->descricaoEvento,
+            "dataEvento" => $request->dataEvento,
+            "localEvento" => $request->localEvento,
+            "prioridadeEvento" => $request->prioridadeEvento,
+            "orcamentoEvento" => $request->orcamentoEvento,
+            "idCliente" => $request->idCliente
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Ocorreu um erro ao salvar o evento.'], 500);
     }
+
+    return response()->json(['message' => 'O evento foi salvo com sucesso!', 'evento' => $evento], 201);
+}
+
 
     
     public function show(string $id)
@@ -151,6 +162,12 @@ class EventosController extends Controller
 
     public function destroy(string $id)
     {
-        //
+        $evento = Eventos::findOrFail($id);
+
+        $evento->delete();
+
+        return response()->json([
+            'message' => "Evento excluído com sucesso!"
+        ]);
     }
 }
