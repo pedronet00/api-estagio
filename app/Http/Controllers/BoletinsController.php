@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Boletins;
+use Carbon\Carbon;
 use Exception;
 
 class BoletinsController extends Controller
@@ -16,113 +17,125 @@ class BoletinsController extends Controller
     }
 
     public function store(Request $request)
-    {
-        try{
-
-            if(!$request->dataCulto){
-                throw new Exception("A data do culto deve ser preenchida!");
-            }
-
-            if($request->dataCulto < date('Y-m-d')){
-                throw new Exception("A data do culto não pode ser anterior a data de hoje!");
-            }
-
-            if(!$request->turnoCulto){
-                throw new Exception("O turno do culto deve ser preenchido!");
-            }
-
-            if(!$request->transmissaoCulto){
-                throw new Exception("A transmissão do culto deve ser preenchida!");
-            }
-
-            if(!$request->filmagemCulto){
-                throw new Exception("A filmagem do culto deve ser preenchida!");
-            }
-
-            if(!$request->fotoCulto){
-                throw new Exception("A foto do culto deve ser preenchida!");
-            }
-
-            if(!$request->apoioCulto){
-                throw new Exception("O apoio do culto deve ser preenchido!");
-            }
-
-            if(!$request->regenciaCulto){
-                throw new Exception("A regência do culto deve ser preenchida!");
-            }
-
-            if(!$request->pianoCulto){
-                throw new Exception("O piano do culto deve ser preenchido!");
-            }
-
-            if(!$request->orgaoCulto){
-                throw new Exception("O órgão do culto deve ser preenchido!");
-            }
-
-            if(!$request->somCulto){
-                throw new Exception("O som do culto deve ser preenchido!");
-            }
-
-            if(!$request->micVolanteCulto){
-                throw new Exception("O microfone volante do culto deve ser preenchido!");
-            }
-
-            if(!$request->apoioInternetCulto){
-                throw new Exception("O apoio à internet do culto deve ser preenchido!");
-            }
-
-            if(!$request->cultoInfantilCulto){
-                throw new Exception("O culto infantil do culto deve ser preenchido!");
-            }
-
-            if(!$request->bercarioCulto){
-                throw new Exception("O berçário do culto deve ser preenchido!");
-            }
-
-            if(!$request->recepcaoCulto){
-                throw new Exception("A recepção do culto deve ser preenchida!");
-            }
-
-            if(!$request->aconselhamentoCulto){
-                throw new Exception("O aconselhamento do culto deve ser preenchido!");
-            }
-
-            if(!$request->estacionamentoCulto){
-                throw new Exception("O estacionamento do culto deve ser preenchido!");
-            }
-
-            if(!$request->diaconosCulto){
-                throw new Exception("Os diáconos do culto devem ser preenchidos!");
-            }
-
-            $boletim = Boletins::create([
-                'dataCulto' => $request->dataCulto,
-                'turnoCulto' => $request->turnoCulto,
-                'transmissaoCulto' => $request->transmissaoCulto,
-                'filmagemCulto' => $request->filmagemCulto,
-                'fotoCulto' => $request->fotoCulto,
-                'apoioCulto' => $request->apoioCulto,
-                'regenciaCulto' => $request->regenciaCulto,
-                'pianoCulto' => $request->pianoCulto,
-                'orgaoCulto' => $request->orgaoCulto,
-                'somCulto' => $request->somCulto,
-                'micVolanteCulto' => $request->micVolanteCulto,
-                'apoioInternetCulto' => $request->apoioInternetCulto,
-                'cultoInfantilCulto' => $request->cultoInfantilCulto,
-                'bercarioCulto' => $request->bercarioCulto,
-                'recepcaoCulto' => $request->recepcaoCulto,
-                'aconselhamentoCulto' => $request->aconselhamentoCulto,
-                'estacionamentoCulto' => $request->estacionamentoCulto,
-                'diaconosCulto' => $request->diaconosCulto,
-            ]);
-        } catch(Exception $e){
-            return response()->json([
-                'error' => 'Ocorreu um erro ao tentar salvar o boletim.'
-            ], 500);
+{
+    try {
+        if (!$request->dataCulto) {
+            throw new Exception("A data do culto deve ser preenchida!");
         }
 
-        return response()->json(['message'=> 'Boletim cadastrado com sucesso!', 'boletim' => $boletim], 201);
+        if ($request->dataCulto < date('Y-m-d')) {
+            throw new Exception("A data do culto não pode ser anterior à data de hoje!");
+        }
+
+        if (!$request->turnoCulto) {
+            throw new Exception("O turno do culto deve ser preenchido!");
+        }
+
+        // Verificar se já existe um boletim com a mesma data e turno
+        $boletimExistente = Boletins::where('dataCulto', $request->dataCulto)
+            ->where('turnoCulto', $request->turnoCulto)
+            ->first();
+
+        if ($boletimExistente) {
+            throw new Exception("Já existe um boletim cadastrado para esta data e turno!");
+        }
+
+        // Validações adicionais para outros campos
+        if (!$request->transmissaoCulto) {
+            throw new Exception("A transmissão do culto deve ser preenchida!");
+        }
+
+        if (!$request->filmagemCulto) {
+            throw new Exception("A filmagem do culto deve ser preenchida!");
+        }
+
+        if (!$request->fotoCulto) {
+            throw new Exception("A foto do culto deve ser preenchida!");
+        }
+
+        if (!$request->apoioCulto) {
+            throw new Exception("O apoio do culto deve ser preenchido!");
+        }
+
+        if (!$request->regenciaCulto) {
+            throw new Exception("A regência do culto deve ser preenchida!");
+        }
+
+        if (!$request->pianoCulto) {
+            throw new Exception("O piano do culto deve ser preenchido!");
+        }
+
+        if (!$request->orgaoCulto) {
+            throw new Exception("O órgão do culto deve ser preenchido!");
+        }
+
+        if (!$request->somCulto) {
+            throw new Exception("O som do culto deve ser preenchido!");
+        }
+
+        if (!$request->micVolanteCulto) {
+            throw new Exception("O microfone volante do culto deve ser preenchido!");
+        }
+
+        if (!$request->apoioInternetCulto) {
+            throw new Exception("O apoio à internet do culto deve ser preenchido!");
+        }
+
+        if (!$request->cultoInfantilCulto) {
+            throw new Exception("O culto infantil do culto deve ser preenchido!");
+        }
+
+        if (!$request->bercarioCulto) {
+            throw new Exception("O berçário do culto deve ser preenchido!");
+        }
+
+        if (!$request->recepcaoCulto) {
+            throw new Exception("A recepção do culto deve ser preenchida!");
+        }
+
+        if (!$request->aconselhamentoCulto) {
+            throw new Exception("O aconselhamento do culto deve ser preenchido!");
+        }
+
+        if (!$request->estacionamentoCulto) {
+            throw new Exception("O estacionamento do culto deve ser preenchido!");
+        }
+
+        if (!$request->diaconosCulto) {
+            throw new Exception("Os diáconos do culto devem ser preenchidos!");
+        }
+
+        // Criar novo boletim
+        $boletim = Boletins::create([
+            'dataCulto' => $request->dataCulto,
+            'turnoCulto' => $request->turnoCulto,
+            'transmissaoCulto' => $request->transmissaoCulto,
+            'filmagemCulto' => $request->filmagemCulto,
+            'fotoCulto' => $request->fotoCulto,
+            'apoioCulto' => $request->apoioCulto,
+            'regenciaCulto' => $request->regenciaCulto,
+            'pianoCulto' => $request->pianoCulto,
+            'orgaoCulto' => $request->orgaoCulto,
+            'somCulto' => $request->somCulto,
+            'micVolanteCulto' => $request->micVolanteCulto,
+            'apoioInternetCulto' => $request->apoioInternetCulto,
+            'cultoInfantilCulto' => $request->cultoInfantilCulto,
+            'bercarioCulto' => $request->bercarioCulto,
+            'recepcaoCulto' => $request->recepcaoCulto,
+            'aconselhamentoCulto' => $request->aconselhamentoCulto,
+            'estacionamentoCulto' => $request->estacionamentoCulto,
+            'diaconosCulto' => $request->diaconosCulto,
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+        ], 400);
     }
+
+    return response()->json(['message' => 'Boletim cadastrado com sucesso!', 'boletim' => $boletim], 201);
+}
+
 
     public function show(string $id)
     {
@@ -319,5 +332,68 @@ class BoletinsController extends Controller
         return response()->json($resultados);
     }
 
+    public function getWeeklyCultos()
+{
+    try {
+        // Obter o início e o final da semana atual (de domingo a domingo)
+        $inicioSemana = Carbon::now()->startOfWeek(Carbon::MONDAY)->format('Y-m-d');
+        $fimSemana = Carbon::now()->endOfWeek(Carbon::SUNDAY)->format('Y-m-d');
 
+        // Buscar cultos no intervalo de datas
+         $cultosDaSemana = Boletins::with([
+            'transmissao',
+            'filmagem',
+            'foto',
+            'apoio',
+            'regencia',
+            'piano',
+            'orgao',
+            'som',
+            'micVolante',
+            'apoioInternet',
+            'cultoInfantil',
+            'bercario',
+            'recepcao',
+            'aconselhamento',
+            'estacionamento',
+            'diaconos',
+        ])->whereBetween('dataCulto', [$inicioSemana, $fimSemana])
+             ->orderBy('dataCulto', 'asc')
+             ->get();
+
+        // $cultosDaSemana = Boletins::with([
+        //     'transmissao',
+        //     'filmagem',
+        //     'foto',
+        //     'apoio',
+        //     'regencia',
+        //     'piano',
+        //     'orgao',
+        //     'som',
+        //     'micVolante',
+        //     'apoioInternet',
+        //     'cultoInfantil',
+        //     'bercario',
+        //     'recepcao',
+        //     'aconselhamento',
+        //     'estacionamento',
+        //     'diaconos',
+        // ])->orderBy('dataCulto', 'asc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $cultosDaSemana,
+            'intervalo' => [
+                'inicioSemana' => $inicioSemana,
+                'fimSemana' => $fimSemana,
+            ]
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Ocorreu um erro ao buscar os cultos da semana.',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
 }

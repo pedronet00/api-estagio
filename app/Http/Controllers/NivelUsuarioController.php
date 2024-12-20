@@ -17,6 +17,20 @@ class NivelUsuarioController extends Controller
         return NivelUsuario::all();
     }
 
+    public function store(Request $request)
+    {
+
+        $nivelUsuario = NivelUsuario::create([
+            'nivelUsuario' => $request->nivelUsuario,
+        ]);
+
+
+        if($nivelUsuario){
+            return response()->json(['message'=> 'Cadastrado com sucesso!', 'nivelUsuario' => $nivelUsuario], 201);
+        }
+
+    }
+
 
     public function show(string $id)
     {

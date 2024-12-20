@@ -10,7 +10,7 @@ class SaidasController extends Controller
 {
     public function index(Request $request)
     {
-        $saidas = Saidas::where('idCliente', $request->idCliente)->with('cliente')->orderBy('data', 'desc')->get();
+        $saidas = Saidas::where('idCliente', $request->idCliente)->with('cliente')->orderBy('data', 'asc')->get();
         return response()->json($saidas);
     }
 

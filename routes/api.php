@@ -103,19 +103,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/departamentoReport', [DepartamentosController::class, 'gerarRelatorioDepartamentos']);
     
     
-    // Boletim
-    Route::get('/boletim', [BoletinsController::class, 'index']);
-    Route::post('/boletim', [BoletinsController::class, 'store']);
-    Route::get('/boletim/{id}', [BoletinsController::class, 'show']);
-    Route::put('/boletim/{id}', [BoletinsController::class, 'update']);
-    Route::delete('/boletim/{id}', [BoletinsController::class, 'destroy']);
-    Route::get('/boletins/pesquisar', [BoletinsController::class, 'search']);
     
-    // Nivel Usuario
-    Route::get('/nivelUsuario', [NivelUsuarioController::class, 'index']);
-    Route::post('/nivelUsuario', [NivelUsuarioController::class, 'store']);
-    Route::get('/nivelUsuario/{id}', [NivelUsuarioController::class, 'show']);
-    Route::put('/nivelUsuario/{id}', [NivelUsuarioController::class, 'update']);
+    
+    
     
     // Missões
     Route::get('/missoes', [MissoesController::class, 'index']);
@@ -126,7 +116,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/missoes/{id}/desativar', [MissoesController::class, 'deactivate']);
     Route::get('/missoesReport', [MissoesController::class, 'gerarRelatorioMissoes']);
     Route::get('/dizimosReport', [DizimosController::class, 'gerarRelatorioDizimos']);
-    Route::get('/dashboardData', [DashboardController::class, 'index']);
     
     // Clientes
     Route::post('/clientes', [ClientesController::class, 'store']);
@@ -173,3 +162,21 @@ Route::delete('/tipoPost/{id}', [TipoPostController::class, 'destroy']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
+
+// Nivel Usuario
+Route::get('/nivelUsuario', [NivelUsuarioController::class, 'index']);
+Route::post('/nivelUsuario', [NivelUsuarioController::class, 'store']);
+Route::get('/nivelUsuario/{id}', [NivelUsuarioController::class, 'show']);
+Route::put('/nivelUsuario/{id}', [NivelUsuarioController::class, 'update']);
+
+// Boletim
+Route::get('/boletim', [BoletinsController::class, 'index']);
+Route::post('/boletim', [BoletinsController::class, 'store']);
+Route::get('/boletim/{id}', [BoletinsController::class, 'show']);
+Route::put('/boletim/{id}', [BoletinsController::class, 'update']);
+Route::delete('/boletim/{id}', [BoletinsController::class, 'destroy']);
+Route::get('/boletins/pesquisar', [BoletinsController::class, 'search']);
+Route::get('/boletins/semana', [BoletinsController::class, 'getWeeklyCultos']);
+
+Route::get('/dashboardData', [DashboardController::class, 'index']);
+Route::get('/pastores', [UserController::class, 'listarPastores']);

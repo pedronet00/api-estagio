@@ -66,6 +66,13 @@ class UserController extends Controller
         return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 200);
     }
 
+    public function listarPastores(){
+
+        $pastores = User::where('nivelUsuario', 3)->get();
+
+        return $pastores;
+    }
+
     public function show(string $id)
     {
         try{

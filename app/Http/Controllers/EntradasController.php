@@ -10,7 +10,7 @@ class EntradasController extends Controller
 {
     public function index(Request $request)
     {
-        $entradas = Entradas::where('idCliente', $request->idCliente)->with('cliente')->orderBy('data', 'desc')->get();
+        $entradas = Entradas::where('idCliente', $request->idCliente)->with('cliente')->orderBy('data', 'asc')->get();
         return response()->json($entradas);
     }
 

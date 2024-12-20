@@ -15,83 +15,127 @@ use App\Models\Saidas;
 class DashboardController extends Controller
 {
     public function index(Request $request)
-    {   
+{
+    // Onboarding e Quantidade de Membros
+    $userCount = User::where('idCliente', $request->idCliente)->count();
 
-        // Onboarding e Quantidade de Membros
-        $userCount = User::where('idCliente', $request->idCliente)->count();
-        $departamentoCount = Departamentos::where('idCliente', $request->idCliente)->count();
-        $recursosCount = Recursos::where('idCliente', $request->idCliente)->count();
+    // Usuários cadastrados no último mês e no mês atual
+    $mesAtual = now()->month;
+    $mesPassado = $mesAtual - 1;
+    $anoAtual = now()->year;
 
+    $usuariosMesAtual = User::where('idCliente', $request->idCliente)
+        ->whereYear('created_at', $anoAtual)
+        ->whereMonth('created_at', $mesAtual)
+        ->count();
 
-        // Saldo atual
-        $saldoMensal = Financas::calcularSaldoMensal($request->idCliente);
+    $usuariosMesPassado = User::where('idCliente', $request->idCliente)
+        ->whereYear('created_at', $anoAtual)
+        ->whereMonth('created_at', $mesPassado)
+        ->count();
 
+    // Comparação percentual entre o mês atual e o mês passado
+    $percentualAumento = $usuariosMesPassado > 0
+        ? (($usuariosMesAtual - $usuariosMesPassado) / $usuariosMesPassado) * 100
+        : ($usuariosMesAtual > 0 ? 100 : 0);
 
-        // Próximos eventos
-        $hoje = now();
-        $proximosEventos =  Eventos::where('idCliente', $request->idCliente)
-            ->where('dataEvento', '>=', $hoje)
-            ->with(['local'])
-            ->orderBy('dataEvento')
-            ->take(3)
-            ->get();
+    $percentualAumento = round($percentualAumento, 2); // Arredonda para 2 casas decimais
 
+    // Quantidade de Departamentos e Recursos
+    $departamentoCount = Departamentos::where('idCliente', $request->idCliente)->count();
+    $recursosCount = Recursos::where('idCliente', $request->idCliente)->count();
 
+    // Saldo do mês atual
+    $entradasMesAtual = Entradas::where('idCliente', $request->idCliente)
+        ->whereYear('data', $anoAtual)
+        ->whereMonth('data', $mesAtual)
+        ->sum('valor');
+    $saidasMesAtual = Saidas::where('idCliente', $request->idCliente)
+        ->whereYear('data', $anoAtual)
+        ->whereMonth('data', $mesAtual)
+        ->sum('valor');
+    $saldoMesAtual = $entradasMesAtual - $saidasMesAtual;
 
-        // Balanço fiscal
-        $anoAtual = date('Y');
+    // Saldo do mês passado
+    $entradasMesPassado = Entradas::where('idCliente', $request->idCliente)
+        ->whereYear('data', $anoAtual)
+        ->whereMonth('data', $mesPassado)
+        ->sum('valor');
+    $saidasMesPassado = Saidas::where('idCliente', $request->idCliente)
+        ->whereYear('data', $anoAtual)
+        ->whereMonth('data', $mesPassado)
+        ->sum('valor');
+    $saldoMesPassado = $entradasMesPassado - $saidasMesPassado;
 
-        // Inicializar arrays para armazenar entradas, saídas e saldos por mês
-        $entradasPorMes = [];
-        $saidasPorMes = [];
-        $saldosPorMes = [];
-        $nomeMeses = [
-            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-        ];
-    
-        // Loop pelos meses de 1 a 12
-        for ($mes = 1; $mes <= 12; $mes++) {
-            // Somar as entradas e saídas do mês atual
-            $entradas = Entradas::where('idCliente', $request->idCliente)
-                ->whereYear('data', $anoAtual)
-                ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo que contém o valor da entrada
-            $saidas = Saidas::where('idCliente', $request->idCliente)
-                ->whereYear('data', $anoAtual)
-                ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo que contém o valor da saída
-            // Calcular o saldo do mês (entradas - saídas)
-            $saldo = $entradas - $saidas;
-            // Armazenar os valores nos arrays
-            $entradasPorMes[$mes] = $entradas;
-            $saidasPorMes[$mes] = $saidas;
-            $saldosPorMes[$mes] = $saldo; // Adiciona o saldo ao array de saldos
-        }
+    // Comparação percentual entre os saldos
+    $percentualSaldo = $saldoMesPassado > 0
+        ? (($saldoMesAtual - $saldoMesPassado) / $saldoMesPassado) * 100
+        : ($saldoMesAtual > 0 ? 100 : 0);
+    $percentualSaldo = round($percentualSaldo, 2);
 
+    // Próximos eventos
+    $hoje = now();
+    $proximosEventos = Eventos::where('idCliente', $request->idCliente)
+        ->where('dataEvento', '>=', $hoje)
+        ->with(['local'])
+        ->orderBy('dataEvento')
+        ->take(3)
+        ->get();
 
-        return response()->json([
-            'onboarding' => [
-                'userCount' => $userCount,
-                'departamentoCount' => $departamentoCount,
-                'recursosCount' => $recursosCount,
-            ],
-            'balancoFiscal' => [
+    // Balanço fiscal
+    $entradasPorMes = [];
+    $saidasPorMes = [];
+    $saldosPorMes = [];
+    $nomeMeses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
 
-                'entradas' => $entradasPorMes,
-                'saidas' => $saidasPorMes,
-                'meses' => $nomeMeses,
-                'saldos' => $saldosPorMes, // Retorna o saldo por mês
-            ],
-            'eventos' => [
-                'proximosEventos' => $proximosEventos
-            ],
-            'userCount' => [
-                'qtdeUsuarios' => $userCount,
-            ],
-            'saldoAtual' => [
-                'saldoAtual' => $saldoMensal
-            ]
-        ]);
+    for ($mes = 1; $mes <= 12; $mes++) {
+        $entradas = Entradas::where('idCliente', $request->idCliente)
+            ->whereYear('data', $anoAtual)
+            ->whereMonth('data', $mes)
+            ->sum('valor');
+        $saidas = Saidas::where('idCliente', $request->idCliente)
+            ->whereYear('data', $anoAtual)
+            ->whereMonth('data', $mes)
+            ->sum('valor');
+        $saldo = $entradas - $saidas;
+
+        $entradasPorMes[$mes] = $entradas;
+        $saidasPorMes[$mes] = $saidas;
+        $saldosPorMes[$mes] = $saldo;
     }
+
+
+    return response()->json([
+        'onboarding' => [
+            'userCount' => $userCount,
+            'usuariosMesAtual' => $usuariosMesAtual,
+            'usuariosMesPassado' => $usuariosMesPassado,
+            'percentualAumento' => $percentualAumento,
+            'departamentoCount' => $departamentoCount,
+            'recursosCount' => $recursosCount,
+        ],
+        'saldoMensal' => [
+            'saldoMesAtual' => $saldoMesAtual,
+            'saldoMesPassado' => $saldoMesPassado,
+            'percentualSaldo' => $percentualSaldo,
+        ],
+        'balancoFiscal' => [
+            'entradas' => $entradasPorMes,
+            'saidas' => $saidasPorMes,
+            'meses' => $nomeMeses,
+            'saldos' => $saldosPorMes,
+        ],
+        'eventos' => [
+            'proximosEventos' => $proximosEventos,
+        ],
+        'saldoAtual' => [
+            'saldoAtual' => $saldoMesAtual,
+        ],
+    ]);
+}
+
+
 }

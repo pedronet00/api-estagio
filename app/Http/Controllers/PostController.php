@@ -13,7 +13,7 @@ class PostController extends Controller
    
     public function index(Request $request)
     {
-        $posts = Post::with(['autor:id,name', 'tipo:id,tipoPost'])->where('idCliente', $request->idCliente)->get();
+        $posts = Post::with(['autor:id,name', 'tipo:id,tipoPost'])->orderBy('dataPost', 'desc')->get();
 
         return response()->json($posts);
     }
@@ -103,14 +103,15 @@ class PostController extends Controller
 
     public function show(string $id)
     {
-        $post = Post::find($id);
+        $post = Post::with(['autor:id,name', 'tipo:id,tipoPost'])->find($id);
 
-        if(!$post){
+        if (!$post) {
             return response()->json(['error' => 'Post não encontrado!'], 404);
         }
 
-        return $post;
+        return response()->json($post);
     }
+
 
     public function update(Request $request, string $id)
     {
