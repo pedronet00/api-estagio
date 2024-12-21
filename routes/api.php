@@ -27,6 +27,8 @@ use App\Http\Controllers\FinancasController;
 use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\SaidasController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CelulasController;
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -122,8 +124,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     
     
-    
-    
 });
 // Eventos
 Route::get('/eventos', [EventosController::class, 'index']);
@@ -180,3 +180,6 @@ Route::get('/boletins/semana', [BoletinsController::class, 'getWeeklyCultos']);
 
 Route::get('/dashboardData', [DashboardController::class, 'index']);
 Route::get('/pastores', [UserController::class, 'listarPastores']);
+
+Route::get('/celulas', [CelulasController::class, 'index']);
+Route::post('/celulas', [CelulasController::class, 'store']);

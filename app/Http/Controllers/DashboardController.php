@@ -134,6 +134,9 @@ class DashboardController extends Controller
         'saldoAtual' => [
             'saldoAtual' => $saldoMesAtual,
         ],
+        'userCount' => [
+            'qtdeUsuarios' => $userCount
+        ]
     ]);
 }
 
