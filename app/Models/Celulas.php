@@ -17,7 +17,8 @@ class Celulas extends Model
         "localizacaoCelula",
         "responsavelCelula",
         "diaReuniao",
-        "idCliente"
+        "idCliente",
+        "imagemCelula"
     ];
 
     public function localizacao()

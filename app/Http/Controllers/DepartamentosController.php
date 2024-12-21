@@ -21,31 +21,42 @@ class DepartamentosController extends Controller
     }
 
     public function store(Request $request)
-    {
-        try{
-
-            if(!$request->tituloDepartamento){
-                throw new Exception("Informe o título do departamento!");
-            }
-
-            if(!$request->textoDepartamento){
-                throw new Exception("Informe o texto do departamento!");
-            }
-
-            $departamento = Departamentos::create([
-                'tituloDepartamento' => $request->tituloDepartamento,
-                'textoDepartamento' => $request->textoDepartamento,
-                'imgDepartamento' => $request->imgDepartamento,
-                'statusDepartamento' => 1,
-                'idCliente' => $request->idCliente
-            ]);
-
-        } catch(Exception $e){
-            return response()->json(['message'=>'Erro ao cadastrar departamento:', 'error' => $e->getMessage()], 500);
+{
+    try {
+        // Validação básica dos campos obrigatórios
+        if (!$request->tituloDepartamento) {
+            throw new Exception("Informe o título do departamento!");
         }
 
-        return response()->json(['message'=> 'Departamento cadastrado com sucesso!', 'departamento' => $departamento], 201);
+        if (!$request->textoDepartamento) {
+            throw new Exception("Informe o texto do departamento!");
+        }
+
+        // Verifica se o arquivo foi enviado
+        $imgPath = null;
+        if ($request->hasFile('imgDepartamento') && $request->file('imgDepartamento')->isValid()) {
+            // Salva a imagem na pasta 'public/departamentos'
+            $imgPath = $request->file('imgDepartamento')->store('departamentos', 'public');
+        } else {
+            throw new Exception("Imagem inválida ou não enviada!");
+        }
+
+        // Criação do departamento
+        $departamento = Departamentos::create([
+            'tituloDepartamento' => $request->tituloDepartamento,
+            'textoDepartamento' => $request->textoDepartamento,
+            'imgDepartamento' => $imgPath, // Salva o caminho da imagem
+            'statusDepartamento' => 1,
+            'idCliente' => $request->idCliente
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json(['message' => 'Erro ao cadastrar departamento:', 'error' => $e->getMessage()], 500);
     }
+
+    return response()->json(['message' => 'Departamento cadastrado com sucesso!', 'departamento' => $departamento], 201);
+}
+
 
     public function show(string $id)
     {

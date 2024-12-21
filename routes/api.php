@@ -182,4 +182,7 @@ Route::get('/dashboardData', [DashboardController::class, 'index']);
 Route::get('/pastores', [UserController::class, 'listarPastores']);
 
 Route::get('/celulas', [CelulasController::class, 'index']);
+Route::get('/celulas/{id}', [CelulasController::class, 'show']);
 Route::post('/celulas', [CelulasController::class, 'store']);
+Route::put('/celulas/{id}', [CelulasController::class, 'update']);
+Route::delete('/celulas/{id}', [CelulasController::class, 'delete']);

@@ -19,32 +19,41 @@ class CelulasController extends Controller
         return $celulas;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nomeCelula' => 'required|string|max:255',
-            'localizacaoCelula' => 'required|integer',
-            'responsavelCelula' => 'required|integer',
-            'diaReuniao' => 'required|integer', 
-            'idCliente' => 'required|integer'
-        ]);
+        try{
+            $validator = Validator::make($request->all(), [
+                'nomeCelula' => 'required|string|max:255',
+                'localizacaoCelula' => 'required|integer',
+                'responsavelCelula' => 'required|integer',
+                'diaReuniao' => 'required|integer', 
+                'idCliente' => 'required|integer',
+                'imagemCelula' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
     
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+            $imagePath = null;
+            if ($request->hasFile('imagemCelula')) {
+                $imagePath = $request->file('imagemCelula')->store('uploads', 'public');
+            }
+        
+            if ($validator->fails()) {
+                return response()->json([
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+    
+            $celula = Celulas::create([
+                'nomeCelula' => $request->nomeCelula,
+                'responsavelCelula' => $request->responsavelCelula,
+                'localizacaoCelula' => $request->localizacaoCelula,
+                'diaReuniao' => $request->diaReuniao,
+                'imagemCelula' => $imagePath,
+                'idCliente' => $request->idCliente
+            ]);
 
-        $celula = Celulas::create($request->all([
-            'nomeCelula',
-            'localizacaoCelula',
-            'responsavelCelula',
-            'diaReuniao',
-            'idCliente',
-        ]));
+        } catch(Exception $e){
+            return response()->json(['message' => 'Erro ao salvar!', 'erro' => $e->getMessage()]);
+        }
     
         return response()->json([
             'message' => 'Célula criada com sucesso!',
@@ -57,23 +66,41 @@ class CelulasController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $celula = Celulas::find($id);
+
+        if(!$celula)
+        {
+            return response()->json(['message' => 'Erro! Não foi possível encontrar essa célula.'], 500);
+        }
+
+        return $celula;
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        
+        try{
+
+            $celula = Celulas::find($id);
+
+            if(!$celula){
+                return response()->json(['message' => 'Erro! Não foi possível encontrar essa célula.'], 500);
+            }
+
+            $celula->nomeCelula = $request->nomeCelula ?? $celula->nomeCelula;
+            $celula->localizacaoCelula = $request->localizacaoCelula ?? $celula->localizacaoCelula;
+            $celula->responsavelCelula = $request->responsavelCelula ?? $celula->responsavelCelula;
+            $celula->diaReuniao = $request->diaReuniao ?? $celula->diaReuniao;
+            $celula->imagemCelula = $request->imagemCelula ?? $celula->imagemCelula;
+            $celula->save();
+
+        } catch(Exception $e){
+            return response()->json(['error' => 'Erro ao editar célula: '. $e->getMessage()], 500);
+        }
+
+        return response()->json(['sucesso' => $celula], 200);
+
     }
 
     /**
@@ -81,6 +108,19 @@ class CelulasController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            $celula = Celulas::find($id);
+
+            if(!$celula){
+                throw new Exception("Célula não encontrada!");
+            }
+
+            $celula->delete();
+
+        } catch(Exception $e){
+            return response()->json(['message' => 'Erro ao deletar: '. $e->getMessage()]);
+        }
+
+        return response()->json(['message' => 'Célula deletada com sucesso!'], 200);
     }
 }
