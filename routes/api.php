@@ -28,6 +28,7 @@ use App\Http\Controllers\EntradasController;
 use App\Http\Controllers\SaidasController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CelulasController;
+use App\Http\Controllers\EncontrosCelulasController;
 
 
 
@@ -186,3 +187,7 @@ Route::get('/celulas/{id}', [CelulasController::class, 'show']);
 Route::post('/celulas', [CelulasController::class, 'store']);
 Route::put('/celulas/{id}', [CelulasController::class, 'update']);
 Route::delete('/celulas/{id}', [CelulasController::class, 'delete']);
+
+Route::get('/encontrosCelulas', [EncontrosCelulasController::class, 'index']);
+Route::post('/encontrosCelulas', [EncontrosCelulasController::class, 'store']);
+Route::get('/proximoEncontroCelula/{id}', [EncontrosCelulasController::class, 'proximoEncontro']);

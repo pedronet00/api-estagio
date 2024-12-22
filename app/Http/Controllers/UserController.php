@@ -32,39 +32,48 @@ class UserController extends Controller
     }
 
     public function store(Request $request)
-    {
-        try {
-            // Validação dos dados
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6',
-                'nivelUsuario' => 'required',
-                'dataNascimentoUsuario' => 'required|date',
-                'idCliente' => 'required|integer'
-            ]);
+{
+    try {
+        // Validação dos dados
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'nivelUsuario' => 'required',
+            'dataNascimentoUsuario' => 'required|date',
+            'idCliente' => 'required|integer',
+            'imgUsuario' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validação de imagem
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], 422);
-            }
-
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password,
-                'nivelUsuario' => $request->nivelUsuario,
-                'imgUsuario' => $request->imgUsuario,
-                'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
-                'usuarioAtivo' => true,
-                'idCliente' => $request->idCliente
-            ]);
-
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao criar usuário: ' . $e->getMessage()], 500);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
         }
 
-        return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 200);
+        // Processando a imagem, caso tenha sido enviada
+        $imgUsuarioPath = null;
+        if ($request->hasFile('imgUsuario')) {
+            $imgUsuarioPath = $request->file('imgUsuario')->store('public/images');
+        }
+
+        // Criando o usuário
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password), // Certifique-se de criptografar a senha
+            'nivelUsuario' => $request->nivelUsuario,
+            'imgUsuario' => $imgUsuarioPath, // Salva o caminho da imagem
+            'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
+            'usuarioAtivo' => true,
+            'idCliente' => $request->idCliente
+        ]);
+
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Erro ao criar usuário: ' . $e->getMessage()], 500);
     }
+
+    return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 200);
+}
+
 
     public function listarPastores(){
 

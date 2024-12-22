@@ -123,4 +123,6 @@ class CelulasController extends Controller
 
         return response()->json(['message' => 'Célula deletada com sucesso!'], 200);
     }
+
+   
 }
