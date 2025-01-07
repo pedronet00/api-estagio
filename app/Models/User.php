@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Clientes;
+use App\Models\Perfis;
 
 class User extends Authenticatable
 {
@@ -23,7 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'dataNascimentoUsuario',
-        'nivelUsuario',
+        'perfil',
         'imgUsuario',
         'usuarioAtivo',
         'idCliente'
@@ -57,9 +58,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function nivelUsuario()
+    public function perfil()
     {
-        return $this->belongsTo(NivelUsuario::class, 'nivelUsuario', 'id');
+        return $this->belongsTo(Perfis::class, 'perfil');
     }
 
 }

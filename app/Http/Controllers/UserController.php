@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Clientes;
+use App\Models\Planos;
 use Exception;
 use Validator;
 
@@ -20,59 +23,94 @@ class UserController extends Controller
         if ($idCliente) {
             // Retorna apenas os usuários relacionados ao idCliente
             return User::where('idCliente', $idCliente)
-                    ->with('nivelUsuario')
+                    ->with('perfil')
                     ->orderBy('name', 'asc')
                     ->get();
         }
 
         // Caso não seja passado, retorna todos os usuários
-        return User::with('nivelUsuario')
+        return User::with('perfil')
                 ->orderBy('name', 'asc')
                 ->get();
     }
 
     public function store(Request $request)
-{
-    try {
-        // Validação dos dados
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'nivelUsuario' => 'required',
-            'dataNascimentoUsuario' => 'required|date',
-            'idCliente' => 'required|integer',
-            'imgUsuario' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validação de imagem
-        ]);
+    {
+        try {
+            // Validação dos dados
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+                'perfil' => 'required',
+                'dataNascimentoUsuario' => 'required|date',
+                'idCliente' => 'required|integer',
+                'imgUsuario' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validação de imagem
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 422);
+            }
+
+            // Iniciando a transação
+            DB::beginTransaction();
+
+            // Verificar se o cliente existe
+            $cliente = Clientes::find($request->idCliente);
+            if (!$cliente) {
+                throw new Exception("Cliente não encontrado!");
+            }
+
+            // Buscar o plano do cliente
+            $plano = Planos::find($cliente->idPlano);
+            if (!$plano) {
+                throw new Exception("Plano do cliente não encontrado!");
+            }
+
+            // Contar o número de usuários existentes para o cliente
+            $usuariosExistentes = User::where('idCliente', $request->idCliente)->count();
+
+            // Verificar se o limite de usuários será ultrapassado
+            if ($usuariosExistentes >= $plano->qtdeUsuarios) {
+                throw new Exception("Limite de usuários atingido para o plano do cliente. Limite permitido: {$plano->qtdeUsuarios}.");
+            }
+
+            // Processando a imagem, caso tenha sido enviada
+            $imgUsuarioPath = null;
+            if ($request->hasFile('imgUsuario')) {
+                $imgUsuarioPath = $request->file('imgUsuario')->store('images', 'public');
+            }
+
+            // Criando o usuário
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password), // Certifique-se de criptografar a senha
+                'perfil' => $request->perfil,
+                'imgUsuario' => $imgUsuarioPath, // Salva o caminho da imagem
+                'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
+                'usuarioAtivo' => true,
+                'idCliente' => $request->idCliente,
+            ]);
+
+            // Commit da transação
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Usuário criado com sucesso!',
+                'user' => $user,
+            ], 201);
+
+        } catch (Exception $e) {
+            // Rollback da transação em caso de erro
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Erro ao criar usuário: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Processando a imagem, caso tenha sido enviada
-        $imgUsuarioPath = null;
-        if ($request->hasFile('imgUsuario')) {
-            $imgUsuarioPath = $request->file('imgUsuario')->store('public/images');
-        }
-
-        // Criando o usuário
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password), // Certifique-se de criptografar a senha
-            'nivelUsuario' => $request->nivelUsuario,
-            'imgUsuario' => $imgUsuarioPath, // Salva o caminho da imagem
-            'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
-            'usuarioAtivo' => true,
-            'idCliente' => $request->idCliente
-        ]);
-
-    } catch (Exception $e) {
-        return response()->json(['error' => 'Erro ao criar usuário: ' . $e->getMessage()], 500);
     }
 
-    return response()->json(['message' => 'Usuário criado com sucesso!', 'user' => $user], 200);
-}
+
 
 
     public function listarPastores(){
@@ -85,7 +123,8 @@ class UserController extends Controller
     public function show(string $id)
     {
         try{
-            $user = User::find($id);
+            $user = User::with('perfil')->find($id);
+
 
             if(!$user){
                 throw new Exception("Usuário não encontrado!");
@@ -163,7 +202,6 @@ class UserController extends Controller
             $user->name = $request->name?? $user->name;
             $user->email = $request->email?? $user->email;
             $user->password = $request->password?? $user->password;
-            $user->nivelUsuario = $request->nivelUsuario?? $user->nivelUsuario;
             $user->imgUsuario = $request->imgUsuario?? $user->imgUsuario;
             $user->dataNascimentoUsuario = $request->dataNascimentoUsuario?? $user->dataNascimentoUsuario;
             $user->save();
@@ -199,20 +237,20 @@ class UserController extends Controller
 
     public function gerarRelatorioUsuarios(Request $request)
     {
+
+        $dataInicial = $request->dataInicial . ' 00:00:00';
+        $dataFinal = $request->dataFinal . ' 23:59:59';
+
         try{
 
             $data_hoje = date("Y-m-d H:i");
 
-            $usuarioCount = User::where('idCliente', $request->idCliente)->count();
-            $usuariosAtivos = User::where('idCliente', $request->idCliente)->where('usuarioAtivo', 1)->count();
-            $usuariosInativos = User::where('idCliente', $request->idCliente)->where('usuarioAtivo', 0)->count();
-            $usuariosComuns = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 1)->count();
-            $usuariosLideres = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 2)->count();
-            $usuariosPastores = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 3)->count();
-            $usuariosAdm = User::where('idCliente', $request->idCliente)->where('nivelUsuario', 4)->count();
+            $usuarioCount = User::where('idCliente', $request->idCliente)->whereBetween('created_at', [$dataInicial, $dataFinal])->count();
+            $usuariosAtivos = User::where('idCliente', $request->idCliente)->whereBetween('created_at', [$dataInicial, $dataFinal])->where('usuarioAtivo', 1)->count();
+            $usuariosInativos = User::where('idCliente', $request->idCliente)->whereBetween('created_at', [$dataInicial, $dataFinal])->where('usuarioAtivo', 0)->count();
 
             $usuarios = User::where('idCliente', $request->idCliente)
-            ->with('nivelUsuario')
+            ->whereBetween('created_at', [$dataInicial, $dataFinal])
             ->orderBy('name', 'asc')
             ->get();
 
@@ -230,10 +268,6 @@ class UserController extends Controller
             'qtdeUsuarios' => $usuarioCount,
             'qtdeUsuariosAtivos' => $usuariosAtivos,
             'qtdeUsuariosInativos' => $usuariosInativos,
-            'qtdeUsuariosComuns' => $usuariosComuns,
-            'qtdeUsuariosLideres' => $usuariosLideres,
-            'qtdeUsuariosPastores' => $usuariosPastores,
-            'qtdeUsuariosAdm' => $usuariosAdm,
             'usuarios' => $usuarios, 
             'data' => $data_hoje
             ],200

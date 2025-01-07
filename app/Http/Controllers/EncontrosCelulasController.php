@@ -14,37 +14,47 @@ class EncontrosCelulasController extends Controller
      */
     public function index(Request $request)
     {
-        return EncontrosCelulas::where('idCliente', $request->idCliente)
-        ->where('idCelula', $request->idCelula)
-        ->with('celula', 'localizacao', 'responsavel')
-        ->orderBy('dataEncontro', 'desc')
-        ->get();
-    }
+        $validator = Validator::make($request->all(), [
+            'idCliente' => 'required|integer',
+            'idCelula' => 'required|integer',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        return EncontrosCelulas::where('idCliente', $request->idCliente)
+            ->where('idCelula', $request->idCelula)
+            ->with('celula', 'localizacao', 'responsavel')
+            ->orderBy('dataEncontro', 'desc')
+            ->get();
+    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        try{
+        // Validação
+        $validator = Validator::make($request->all(), [
+            'idCelula' => 'required|integer',
+            'idLocal' => 'required|integer',
+            'idPessoaEstudo' => 'required|integer',
+            'idCliente' => 'required|integer',
+            'dataEncontro' => 'required|date', 
+            'qtdePresentes' => 'nullable|integer',
+            'temaEstudo' => 'required|string|max:255',
+        ]);
 
-            $validator = Validator::make($request->all(), [
-                'idCelula' => 'required|integer',
-                'idLocal' => 'required|integer',
-                'idPessoaEstudo' => 'required|integer',
-                'idCliente' => 'required|integer',
-                'dataEncontro' => 'required|date', 
-                'qtdePresentes' => 'nullable|integer',
-                'temaEstudo' => 'required|string|max:255',
-            ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-    
+        try {
             $encontroCelula = EncontrosCelulas::create([
                 'idCelula' => $request->idCelula,
                 'idLocal' => $request->idLocal,
@@ -54,8 +64,7 @@ class EncontrosCelulasController extends Controller
                 'temaEstudo' => $request->temaEstudo,
                 'idCliente' => $request->idCliente
             ]);
-
-        } catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(['message' => 'Erro ao salvar!', 'erro' => $e->getMessage()]);
         }
 
@@ -70,23 +79,42 @@ class EncontrosCelulasController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Validação se o ID é válido (opcional)
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|exists:encontros_celulas,id',  // Verifica se o encontro existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Lógica para exibir o recurso específico
     }
 
     public function proximoEncontro(string $id)
     {
-        try{
-            
+        // Validação
+        $validator = Validator::make(['idCelula' => $id], [
+            'idCelula' => 'required|integer|exists:celulas,id',  // Verifica se a célula existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
             $hoje = date('Y-m-d');
-
             $proximoEncontro = EncontrosCelulas::where('idCelula', $id)
-            ->with('localizacao', 'responsavel')
-            ->whereNull('qtdePresentes')
-            ->where('dataEncontro', '>=', $hoje)
-            ->orderBy('dataEncontro', 'asc')
-            ->first();
-
-        } catch(Exception $e){
+                ->with('localizacao', 'responsavel')
+                ->whereNull('qtdePresentes')
+                ->where('dataEncontro', '>=', $hoje)
+                ->orderBy('dataEncontro', 'asc')
+                ->first();
+        } catch (Exception $e) {
             return response()->json(['erro' => $e->getMessage()]);
         }
 
@@ -98,7 +126,23 @@ class EncontrosCelulasController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Validação
+        $validator = Validator::make($request->all(), [
+            'idCelula' => 'required|integer',
+            'idLocal' => 'required|integer',
+            'idPessoaEstudo' => 'required|integer',
+            'dataEncontro' => 'required|date', 
+            'qtdePresentes' => 'nullable|integer',
+            'temaEstudo' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Lógica de atualização do recurso
     }
 
     /**
@@ -106,6 +150,17 @@ class EncontrosCelulasController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // Validação
+        $validator = Validator::make(['id' => $id], [
+            'id' => 'required|exists:encontros_celulas,id',  // Verifica se o encontro existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Lógica para remover o recurso
     }
 }

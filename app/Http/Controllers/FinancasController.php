@@ -3,30 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse; // Certificando de usar o namespace correto
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Entradas;
 use App\Models\Saidas;
 use App\Models\Financas;
 
-
 class FinancasController extends Controller
 {
-
     public function saldoMensal(Request $request): JsonResponse
     {
+        // Validando o parâmetro idCliente
+        $validator = Validator::make($request->all(), [
+            'idCliente' => 'required|integer|exists:clientes,id', // Verifica se idCliente é obrigatório, é um número inteiro e existe na tabela clientes
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
         // Pegando o idCliente da query string
         $idCliente = $request->query('idCliente');
-
-        // Verificando se o idCliente foi passado
-        if (!$idCliente) {
-            return response()->json(['error' => 'O parâmetro idCliente é obrigatório.'], 400);
-        }
 
         // Calculando o saldo mensal para o cliente
         $saldoMensal = Financas::calcularSaldoMensal($idCliente);
 
-        // Retornando o saldo em formato JSON
         return response()->json([
             'saldoMensal' => $saldoMensal
         ], 200);
@@ -34,12 +36,17 @@ class FinancasController extends Controller
 
     public function entradasSaidasMensais(Request $request)
     {
+        // Validando o parâmetro idCliente
+        $validator = Validator::make($request->all(), [
+            'idCliente' => 'required|integer|exists:clientes,id', // Verifica se idCliente é obrigatório, é um número inteiro e existe na tabela clientes
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
         $idCliente = $request->idCliente;
-
-        // Obter o ano atual
         $anoAtual = date('Y');
-
-        // Inicializar arrays para armazenar entradas, saídas e saldos por mês
         $entradasPorMes = [];
         $saidasPorMes = [];
         $saldosPorMes = [];
@@ -48,108 +55,94 @@ class FinancasController extends Controller
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
 
-        // Loop pelos meses de 1 a 12
         for ($mes = 1; $mes <= 12; $mes++) {
-            // Somar as entradas e saídas do mês atual
             $entradas = Entradas::where('idCliente', $idCliente)
                 ->whereYear('data', $anoAtual)
                 ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo que contém o valor da entrada
+                ->sum('valor');
 
             $saidas = Saidas::where('idCliente', $idCliente)
                 ->whereYear('data', $anoAtual)
                 ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo que contém o valor da saída
+                ->sum('valor');
 
-            // Calcular o saldo do mês (entradas - saídas)
             $saldo = $entradas - $saidas;
 
-            // Armazenar os valores nos arrays
             $entradasPorMes[$mes] = $entradas;
             $saidasPorMes[$mes] = $saidas;
-            $saldosPorMes[$mes] = $saldo; // Adiciona o saldo ao array de saldos
+            $saldosPorMes[$mes] = $saldo;
         }
 
         return response()->json([
             'entradas' => $entradasPorMes,
             'saidas' => $saidasPorMes,
-            'saldos' => $saldosPorMes, // Retorna o saldo por mês
+            'saldos' => $saldosPorMes,
             'meses' => $nomeMeses
         ]);
     }
 
     public function gerarRelatorioFinancas(Request $request): JsonResponse
     {
-        // Pegando o idCliente da query string
-        $idCliente = $request->idCliente;
+        // Validando o parâmetro idCliente
+        $validator = Validator::make($request->all(), [
+            'idCliente' => 'required|integer|exists:clientes,id', // Verifica se idCliente é obrigatório, é um número inteiro e existe na tabela clientes
+        ]);
 
-        // Verificando se o idCliente foi passado
-        if (!$idCliente) {
-            return response()->json(['error' => 'O parâmetro idCliente é obrigatório.'], 400);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
         }
 
-        // Obtendo o saldo mensal atual
+        $idCliente = $request->idCliente;
         $saldoMensal = Financas::calcularSaldoMensal($idCliente);
 
-        // Inicializando arrays para armazenar entradas, saídas e saldos por mês
         $entradasPorMes = [];
         $saidasPorMes = [];
-        $saldosPorMes = []; // Novo array para armazenar o saldo de cada mês
+        $saldosPorMes = [];
         $nomeMeses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
 
-        // Obter o ano atual
         $anoAtual = date('Y');
 
-        // Loop pelos meses de 1 a 12
         for ($mes = 1; $mes <= 12; $mes++) {
-            // Somar as entradas e saídas do mês atual
             $entradas = Entradas::where('idCliente', $idCliente)
                 ->whereYear('data', $anoAtual)
                 ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo correto
+                ->sum('valor');
 
             $saidas = Saidas::where('idCliente', $idCliente)
                 ->whereYear('data', $anoAtual)
                 ->whereMonth('data', $mes)
-                ->sum('valor'); // Altere 'valor' para o campo correto
+                ->sum('valor');
 
-            // Calcular o saldo do mês (entradas - saídas)
             $saldo = $entradas - $saidas;
 
-            // Armazenar os valores nos arrays
             $entradasPorMes[$mes] = $entradas;
             $saidasPorMes[$mes] = $saidas;
-            $saldosPorMes[$mes] = $saldo; // Armazenar o saldo calculado no array de saldos
+            $saldosPorMes[$mes] = $saldo;
         }
 
-        // Identificar o mês com mais entradas e mais saídas
-        $mesMaiorEntrada = array_keys($entradasPorMes, max($entradasPorMes))[0]; // Retorna o mês com maior entrada
-        $valorMaiorEntrada = max($entradasPorMes); // Retorna o valor da maior entrada
+        $mesMaiorEntrada = array_keys($entradasPorMes, max($entradasPorMes))[0];
+        $valorMaiorEntrada = max($entradasPorMes);
 
-        $mesMaiorSaida = array_keys($saidasPorMes, max($saidasPorMes))[0]; // Retorna o mês com maior saída
-        $valorMaiorSaida = max($saidasPorMes); // Retorna o valor da maior saída
+        $mesMaiorSaida = array_keys($saidasPorMes, max($saidasPorMes))[0];
+        $valorMaiorSaida = max($saidasPorMes);
 
-        // Retornar os dados em formato JSON, incluindo o saldo por mês
         return response()->json([
             'saldoMensalAtual' => $saldoMensal,
             'entradas' => $entradasPorMes,
             'saidas' => $saidasPorMes,
-            'saldos' => $saldosPorMes, // Retornar o saldo por mês
+            'saldos' => $saldosPorMes,
             'mesMaiorEntrada' => [
-                'mes' => $nomeMeses[$mesMaiorEntrada - 1], // Converter o índice do mês
+                'mes' => $nomeMeses[$mesMaiorEntrada - 1],
                 'valor' => $valorMaiorEntrada
             ],
             'mesMaiorSaida' => [
-                'mes' => $nomeMeses[$mesMaiorSaida - 1], // Converter o índice do mês
+                'mes' => $nomeMeses[$mesMaiorSaida - 1],
                 'valor' => $valorMaiorSaida
             ],
             'meses' => $nomeMeses
         ]);
     }
-
-
-    
 }

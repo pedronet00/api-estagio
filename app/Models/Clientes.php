@@ -14,5 +14,9 @@ class Clientes extends Model
         'razaoSocialCliente',
         'email',
         'password',
+        'idPlano',
+        'session_token',
+        'statusPagamento',
+        'stripe_customer_id'
     ];
 }

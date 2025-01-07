@@ -3,69 +3,174 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use MercadoPago\Client\Common\RequestOptions;
-use MercadoPago\Client\Payment\PaymentClient;
-use MercadoPago\Exceptions\MPApiException;
-use MercadoPago\MercadoPagoConfig;
+use Stripe\Stripe;
+use Stripe\Checkout\Session;
+use Stripe\Exception\ApiErrorException;
+use App\Models\Clientes;
 
 class PaymentController extends Controller
 {
-    public function pagamentoCartao(Request $request)
+    public function processPayment(Request $request)
     {
-        $client = new PaymentClient();
+        // Recebe os dados do plano (nome e valor)
+        $paymentMethod = $request->input('payment_method');
+        $nomePlano = $request->input('nome_plano');  // Nome do plano
+        $valorPlano = $request->input('valor_plano');  // Valor do plano (em reais)
 
-    try {
+        $sessionToken = $request->session_token;
 
-        // Step 4: Create the request array
-        $request = [
-            "transaction_amount" => 100,
-            "token" => "YOUR_CARD_TOKEN",
-            "description" => "description",
-            "installments" => 1,
-            "payment_method_id" => "visa",
-            "payer" => [
-                "email" => "user@test.com",
-            ]
-        ];
+        // Encontra o usuário
+        $cliente = Clientes::where('session_token', $sessionToken)->first();
 
-        // Step 5: Create the request options, setting X-Idempotency-Key
-        $request_options = new RequestOptions();
-        $request_options->setCustomHeaders(["X-Idempotency-Key: <SOME_UNIQUE_VALUE>"]);
-
-        // Step 6: Make the request
-        $payment = $client->create($request, $request_options);
-        echo $payment->id;
-
-    // Step 7: Handle exceptions
-    } catch (MPApiException $e) {
-        echo "Status code: " . $e->getApiResponse()->getStatusCode() . "\n";
-        echo "Content: ";
-        var_dump($e->getApiResponse()->getContent());
-        echo "\n";
-    } catch (\Exception $e) {
-        echo $e->getMessage();
-    }
-    }
-
-    public function pagamentoPix(Request $request)
-    {
-        // Criar instância de pagamento Pix
-        $client = new PaymentClient();
-        $payment = new Paymente();
-        $payment->transaction_amount = $request->valor;
-        $payment->description = "Pagamento de mensalidade";
-        $payment->payment_method_id = "pix";
-        $payment->payer = array(
-            "email" => $request->email
-        );
-
-        $payment->save();
-
-        if ($payment->status == 'pending') {
-            return response()->json(['pix_qr_code' => $payment->point_of_interaction->transaction_data->qr_code]);
+        if (!$cliente) {
+            return response()->json(['error' => 'Usuário não encontrado.', 'token' => $sessionToken], 404);
         }
 
-        return response()->json(['status' => 'Falha no pagamento']);
+        // Convertendo o valor para centavos
+        $valorPlanoCentavos = (int) ($valorPlano * 100);
+
+        // Configura a chave da API do Stripe
+        Stripe::setApiKey(config('stripe.test.sk'));
+
+        try {
+            // Criação da sessão de pagamento
+            $session = Session::create([
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'brl',  // Usando BRL para reais
+                            'product_data' => [
+                                'name' => $nomePlano, // Nome do produto vindo do frontend
+                            ],
+                            'unit_amount' => $valorPlanoCentavos,  // Valor em centavos
+                        ],
+                        'quantity' => 1,
+                    ],
+                ],
+                'mode' => 'payment',
+                'success_url' => url('/success'),
+                'cancel_url' => url('/checkout'),
+            ]);
+
+            // Atualiza o status do pagamento e o próximo pagamento
+            $cliente->statusPagamento = "Pago";
+            $cliente->proximoPagamento = now()->addMonth(); // Define próximo pagamento para daqui a 1 mês
+            $cliente->save();
+
+            return response()->json([
+                'session_id' => $session->id, 
+                'message' => 'Pagamento processado com sucesso!',
+                'produto' => $nomePlano,
+                'valor' => $valorPlano,
+                'proximoPagamento' => $cliente->proximoPagamento->toDateString(),
+            ], 200);
+        } catch (ApiErrorException $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+
+    public function createSubscription(Request $request)
+    {
+        Stripe::setApiKey(config('stripe.test.sk'));
+
+        $validatedData = $request->validate([
+            'stripe_customer_id' => 'required|string', // O cliente Stripe ID
+            'price_id' => 'required|string', // O ID do preço do produto no Stripe
+        ]);
+
+        try {
+            $subscription = Subscription::create([
+                'customer' => $validatedData['stripe_customer_id'],
+                'items' => [[
+                    'price' => $validatedData['price_id'],
+                ]],
+            ]);
+
+            return response()->json([
+                'subscription_id' => $subscription->id,
+                'status' => $subscription->status,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    // Backend em Laravel
+    public function attachPaymentMethod(Request $request)
+    {
+        $validatedData = $request->validate([
+            'payment_method_id' => 'required|string',
+            'stripe_customer_id' => 'required|string',
+        ]);
+
+        try {
+            // Configure a chave de API do Stripe
+            \Stripe\Stripe::setApiKey(config('stripe.test.sk'));
+
+            // Recupera e anexa o método de pagamento ao cliente
+            $paymentMethod = \Stripe\PaymentMethod::retrieve($validatedData['payment_method_id']);
+            $paymentMethod->attach([
+                'customer' => $validatedData['stripe_customer_id'],
+            ]);
+
+            // Define o método de pagamento como padrão
+            $customer = \Stripe\Customer::update(
+                $validatedData['stripe_customer_id'],
+                [
+                    'invoice_settings' => [
+                        'default_payment_method' => $validatedData['payment_method_id'],
+                    ],
+                ]
+            );
+
+            return response()->json(['success' => true, 'customer' => $customer], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function startSubscription(Request $request)
+    {
+        // IDs mockados para teste
+        $customerId = $request->stripe_customer_id; // ID do cliente no Stripe
+        $productId = $request->product_id; // ID do produto no Stripe
+
+        try {
+            // Configure a chave de API do Stripe
+            \Stripe\Stripe::setApiKey(config('stripe.test.sk'));
+
+            // Recupera o preço relacionado ao produto
+            $prices = \Stripe\Price::all([
+                'product' => $productId,
+                'active' => true,
+            ]);
+
+            if (count($prices->data) === 0) {
+                return response()->json(['success' => false, 'error' => 'Nenhum preço ativo encontrado para o produto.'], 400);
+            }
+
+            $priceId = $prices->data[0]->id; // Pega o primeiro preço ativo
+
+            // Cria a assinatura
+            $subscription = \Stripe\Subscription::create([
+                'customer' => $customerId,
+                'items' => [
+                    ['price' => $priceId],
+                ],
+                'expand' => ['latest_invoice.payment_intent'], // Expande para obter detalhes do pagamento
+            ]);
+
+            return response()->json(['success' => true, 'subscription' => $subscription], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+
+
 }
+
+
 

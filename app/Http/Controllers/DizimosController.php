@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Dizimos;
 use App\Models\Entradas;
 use Exception;
@@ -19,19 +20,24 @@ class DizimosController extends Controller
 
     public function store(Request $request)
     {
+        // Validação dos campos de entrada
+        $validator = Validator::make($request->all(), [
+            'dataCulto' => 'required|date',
+            'turnoCulto' => 'required|in:0,1', // Assuming turnoCulto is 0 for 'Manhã' and 1 for 'Noite'
+            'valorArrecadado' => 'required|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id', // Verifica se o cliente existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Erro na validação dos dados',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
         try {
-            if (!$request->dataCulto) {
-                throw new Exception("A data do culto não pode estar vazia!");
-            }
-
-            // if (!$request->turnoCulto) {
-            //     throw new Exception("O turno do culto não pode estar vazio!");
-            // }
-
-            if (!$request->valorArrecadado) {
-                throw new Exception("O valor arrecadado não pode estar vazio!");
-            }
-
+            // Verificar se já existe um registro para a data e turno
             $existingDizimo = Dizimos::where('dataCulto', $request->dataCulto)
                 ->where('turnoCulto', $request->turnoCulto)
                 ->where('idCliente', $request->idCliente)
@@ -41,11 +47,11 @@ class DizimosController extends Controller
                 throw new Exception("Já existe um registro para esta data e turno!");
             }
 
-            $dataCulto = $request->dataCulto;
+            // Definir o turno
             $turnoCulto = $request->turnoCulto === 0 ? "Manhã" : "Noite";
+            $msgEntrada = "Dízimo de {$request->dataCulto}, no culto da {$turnoCulto}";
 
-            $msgEntrada = "Dízimo de $dataCulto, no culto da $turnoCulto";
-
+            // Registrar o dízimo
             $dizimo = Dizimos::create([
                 'dataCulto' => $request->dataCulto,
                 'turnoCulto' => $request->turnoCulto,
@@ -53,6 +59,7 @@ class DizimosController extends Controller
                 'idCliente' => $request->idCliente
             ]);
 
+            // Registrar a entrada
             $entrada = Entradas::create([
                 'descricao' => $msgEntrada,
                 'valor' => $request->valorArrecadado,
@@ -61,23 +68,48 @@ class DizimosController extends Controller
                 'idCliente' => $request->idCliente
             ]);
 
-            if(!$entrada){
+            if (!$entrada) {
                 throw new Exception("Erro ao registrar dízimo como entrada!");
             }
 
         } catch (Exception $e) {
-            return response()->json(['status' => 500, 'message' => 'Erro ao salvar registro de dízimo', 'erro' => $e->getMessage()]);
+            return response()->json([
+                'status' => 500,
+                'message' => 'Erro ao salvar registro de dízimo',
+                'erro' => $e->getMessage()
+            ], 500);
         }
 
-        return response()->json(['status' => 200, 'message' => 'Sucesso!', 'dizimo' => $dizimo]);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Sucesso!',
+            'dizimo' => $dizimo
+        ]);
     }
-
 
     public function gerarRelatorioDizimos(Request $request)
     {
+        // Validação dos parâmetros de data
+        $validator = Validator::make($request->all(), [
+            'dataInicial' => 'required|date',
+            'dataFinal' => 'required|date',
+            'idCliente' => 'required|exists:clientes,id', // Verifica se o cliente existe
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Erro na validação dos dados',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
         try {
             $idCliente = $request->idCliente;
+            $dataInicial = $request->dataInicial . ' 00:00:00';
+            $dataFinal = $request->dataFinal . ' 23:59:59';
 
+            // Inicializando variáveis de relatórios
             $entradasPorMes = [];
             $nomeMeses = [
                 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -86,97 +118,66 @@ class DizimosController extends Controller
 
             $anoAtual = date('Y');
 
-            $dizimos = Dizimos::where('idCliente', $idCliente)->orderBy('dataCulto', 'asc')->get();
-
-            $cultoMaiorValorDizimo = Dizimos::where('idCliente', $idCliente)->orderBy('valorArrecadado', 'desc')->first();
-            $cultoMenorValorDizimo = Dizimos::where('idCliente', $idCliente)->orderBy('valorArrecadado', 'asc')->first();
+            // Filtra os dízimos com base nas datas
+            $dizimos = Dizimos::where('idCliente', $idCliente)
+                ->whereBetween('dataCulto', [$dataInicial, $dataFinal])
+                ->orderBy('dataCulto', 'asc')
+                ->get();
 
             if ($dizimos->isEmpty()) {
                 throw new Exception("Não há registros de dízimos.");
             }
 
+            // Calcula entradas por mês
             for ($mes = 1; $mes <= 12; $mes++) {
-                // Somar as entradas do mês atual
                 $entradas = Dizimos::where('idCliente', $idCliente)
                     ->whereYear('dataCulto', $anoAtual)
                     ->whereMonth('dataCulto', $mes)
                     ->where('valorArrecadado', '>', 0)
                     ->sum('valorArrecadado');
 
-                // Armazenar os valores nos arrays
                 $entradasPorMes[$mes] = $entradas;
             }
 
-            // Filtrar os meses com valores maiores que 0
+            // Filtra meses com entradas válidas
             $entradasFiltradas = array_filter($entradasPorMes, function ($valor) {
                 return $valor > 0;
             });
 
-            // Verificar se existem entradas válidas
             if (empty($entradasFiltradas)) {
                 throw new Exception("Não há entradas com valores maiores que 0.");
             }
 
-            $mesMaiorEntrada = array_keys($entradasFiltradas, max($entradasFiltradas))[0]; // Retorna o mês com maior entrada
-            $valorMaiorEntrada = max($entradasFiltradas); // Retorna o valor da maior entrada
+            // Determina o mês com maior e menor entrada
+            $mesMaiorEntrada = array_keys($entradasFiltradas, max($entradasFiltradas))[0];
+            $valorMaiorEntrada = max($entradasFiltradas);
 
-            $mesMenorEntrada = array_keys($entradasFiltradas, min($entradasFiltradas))[0]; // Retorna o mês com menor entrada
-            $valorMenorEntrada = min($entradasFiltradas); // Retorna o valor da menor entrada
+            $mesMenorEntrada = array_keys($entradasFiltradas, min($entradasFiltradas))[0];
+            $valorMenorEntrada = min($entradasFiltradas);
 
         } catch (Exception $e) {
             return response()->json([
                 'message' => "Erro!",
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
 
         return response()->json([
             'message' => 'Sucesso!',
             'entradas' => $entradasPorMes,
-            'cultoMaiorValorArrecadado' => $cultoMaiorValorDizimo,
-            'cultoMenorValorArrecadado' => $cultoMenorValorDizimo,
             'mesMaiorEntrada' => [
-                'mes' => $nomeMeses[$mesMaiorEntrada - 1], // Converter o índice do mês
+                'mes' => $nomeMeses[$mesMaiorEntrada - 1],
                 'valor' => $valorMaiorEntrada
             ],
             'mesMenorEntrada' => [
-                'mes' => $nomeMeses[$mesMenorEntrada - 1], // Converter o índice do mês
+                'mes' => $nomeMeses[$mesMenorEntrada - 1],
                 'valor' => $valorMenorEntrada
             ],
             'dizimos' => $dizimos
         ]);
     }
 
-
     /**
-     * Display the specified resource.
+     * Other methods (show, update, destroy, etc.) can also be validated as needed.
      */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }
