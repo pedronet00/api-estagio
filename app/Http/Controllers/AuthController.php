@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use MercadoPago\Client\Common\RequestOptions;
+use MercadoPago\Client\Customer\CustomerClient;
+use MercadoPago\Exceptions\MPApiException;
+use MercadoPago\MercadoPagoConfig;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Clientes;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http; // Importação correta do Http
 use Illuminate\Support\Facades\Auth;
 use Exception;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TestMail;
 use Illuminate\Support\Str;
 
 
@@ -87,34 +95,40 @@ public function register(Request $request)
     try {
         $validatedData = $request->validate([
             'razaoSocialCliente' => 'required|string|max:255',
+            'cnpj' => 'required',
             'email' => 'required|string|email|max:255|unique:clientes',
             'password' => 'required|string|min:6',
-            'idPlano' => 'required|integer', // Certifique-se de que o plano é fornecido
+            'idPlano' => 'required|integer',
         ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
         return response()->json(['message' => 'Erro de validação: ', 'errors' => $e->errors()], 422);
     }
 
     try {
-        // Configura a chave secreta do Stripe
         $stripe = new \Stripe\StripeClient(config('stripe.test.sk'));
 
-        // Cria o cliente no Stripe
         $stripeCustomer = $stripe->customers->create([
             'name' => $validatedData['razaoSocialCliente'],
             'email' => $validatedData['email'],
         ]);
 
-        // Cria o cliente no banco de dados
         $cliente = Clientes::create([
             'razaoSocialCliente' => $validatedData['razaoSocialCliente'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
             'idPlano' => $validatedData['idPlano'],
-            'session_token' => Str::random(40), // Token único
+            'session_token' => Str::random(40),
             'statusPagamento' => "Pendente",
-            'stripe_customer_id' => $stripeCustomer->id, // Salva o ID do cliente do Stripe
+            'stripe_customer_id' => $stripeCustomer->id,
+            'cnpj' => $validatedData['cnpj']
         ]);
+
+        // try {
+        //     Mail::to($validatedData['email'])->send(new TestMail());
+        // } catch (\Exception $e) {
+        //     // Log error or handle it gracefully
+        //     \Log::error('Erro ao enviar e-mail: ' . $e->getMessage());
+        // }
 
         return response()->json([
             'message' => 'Cliente registrado com sucesso',
@@ -128,6 +142,15 @@ public function register(Request $request)
     }
 }
 
+public function enviarEmailsTestes()
+{
+    try {
+        Mail::to("stabilepedro010403@gmail.com")->send(new TestMail());
+    } catch (\Exception $e) {
+        // Log error or handle it gracefully
+        \Log::error('Erro ao enviar e-mail: ' . $e->getMessage());
+    }
+}
 
 
 
