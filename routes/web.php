@@ -9,6 +9,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/email-preview', function () {
+    return view('mailing.test'); // Retorna diretamente a view do e-mail
+});
 
 Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');
 Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');

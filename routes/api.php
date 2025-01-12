@@ -38,11 +38,20 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CultoController;
 use App\Http\Controllers\EscalasCultosController;
 use App\Http\Controllers\FuncoesCultoController;
+use App\Mail\TestMail;
+use Illuminate\Support\Facades\Mail;
 
 
 Route::post('/process-payment', [PaymentController::class, 'processPayment']);
 Route::post('/attach-payment-method', [PaymentController::class, 'attachPaymentMethod']);
 Route::post('/start-subscription', [PaymentController::class, 'startSubscription']);
+
+
+Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
+Route::post('/delete-customer', [PaymentController::class, 'deleteCustomer']);
+Route::post('/success-checkout', [PaymentController::class, 'successCheckout']);
+
+Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
 // Route::middleware('auth:sanctum')->group(function () {
 
     // Usuários
@@ -64,10 +73,13 @@ Route::post('/start-subscription', [PaymentController::class, 'startSubscription
     // Entradas
     Route::get('/entradas', [EntradasController::class, 'index']);
     Route::post('/entradas', [EntradasController::class, 'store']);
+    Route::delete('/entradas/{id}', [EntradasController::class, 'delete']);
 
     // Saídas
     Route::get('/saidas', [SaidasController::class, 'index']);
     Route::post('/saidas', [SaidasController::class, 'store']);
+    Route::delete('/saidas/{id}', [SaidasController::class, 'delete']);
+
 
     // Livros
     Route::get('/livros', [LivrosController::class, 'index']);
@@ -82,6 +94,8 @@ Route::post('/start-subscription', [PaymentController::class, 'startSubscription
     // Classes EBD
     Route::get('/classesEBD', [ClassesEBDController::class, 'index']);
     Route::post('/classesEBD', [ClassesEBDController::class, 'store']);
+    Route::get('/classesEBD/{id}', [ClassesEBDController::class, 'show']);
+    Route::put('/classesEBD/{id}', [ClassesEBDController::class, 'update']);
 
     // Dízimos
     Route::get('/dizimos', [DizimosController::class, 'index']);
@@ -193,6 +207,7 @@ Route::post('/start-subscription', [PaymentController::class, 'startSubscription
     Route::post('/celulas', [CelulasController::class, 'store']);
     Route::put('/celulas/{id}', [CelulasController::class, 'update']);
     Route::delete('/celulas/{id}', [CelulasController::class, 'destroy']);
+    Route::get('/membrosCount', [CelulasController::class, 'contarMembrosCelula']);
 
     // Encontros células
     Route::get('/encontrosCelulas', [EncontrosCelulasController::class, 'index']);
@@ -246,6 +261,16 @@ Route::post('/start-subscription', [PaymentController::class, 'startSubscription
     Route::get('/escala-culto/{idEscala}', [EscalasCultosController::class, 'show']);
     Route::get('/escala-culto-usuario', [EscalasCultosController::class, 'mostrarEscalasUsuario']);
     Route::delete('/escala-culto', [EscalasCultosController::class, 'destroy']);
+
+    Route::post('/mercadopago/client/create', [AuthController::class, 'createCustomer']);// No arquivo routes/api.php
+    Route::get('/mercadopago/clientes', [AuthController::class, 'listClients']);
+    Route::get('/mercadopago/createSubscription', [AuthController::class, 'createSubscription']);
+
+    Route::get('/send-test-email', function () {
+        Mail::to('stabilepedro010403@gmail.com')->send(new TestMail());
+        return 'Test email sent!';
+    });
+    
 
         
     
