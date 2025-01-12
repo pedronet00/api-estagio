@@ -58,4 +58,18 @@ class EntradasController extends Controller
 
         return response()->json($entrada, 201);
     }
+
+    public function delete($id)
+    {
+        try{
+
+            $saida = Entradas::find($id);
+            $saida->delete();
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return response()->json(['sucesso' => "Saída excluída com sucesso."]);
+    }
 }

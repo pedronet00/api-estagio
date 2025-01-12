@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Saidas;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class SaidasController extends Controller
 {
@@ -30,7 +31,7 @@ class SaidasController extends Controller
         $validator = Validator::make($request->all(), [
             'idCliente' => 'required|integer|exists:clientes,id', // idCliente obrigatório e existente
             'descricao' => 'required|string|max:255', // descrição obrigatória
-            'quantidade' => 'required|integer|min:1', // quantidade obrigatória e maior ou igual a 1
+            'valor' => 'required|integer|min:1', // quantidade obrigatória e maior ou igual a 1
             'data' => 'required|date', // data obrigatória e no formato de data válido
         ]);
 
@@ -41,5 +42,19 @@ class SaidasController extends Controller
         // Criando a saída no banco de dados
         $saida = Saidas::create($request->all());
         return response()->json($saida, 201);
+    }
+
+    public function delete($id)
+    {
+        try{
+
+            $saida = Saidas::find($id);
+            $saida->delete();
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return response()->json(['sucesso' => "Saída excluída com sucesso."]);
     }
 }

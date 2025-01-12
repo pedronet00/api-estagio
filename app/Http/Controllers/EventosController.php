@@ -59,7 +59,7 @@ class EventosController extends Controller
                 'nomeEvento' => 'required|string|max:255',
                 'descricaoEvento' => 'nullable|string|max:500',
                 'dataEvento' => 'required|date',
-                'localEvento' => 'required|string|max:255',
+                'localEvento' => 'required|integer|max:255',
                 'prioridadeEvento' => 'nullable|integer',
                 'orcamentoEvento' => 'nullable|numeric',
                 'idCliente' => 'required|integer',
@@ -99,17 +99,21 @@ class EventosController extends Controller
         return response()->json(['message' => 'O evento foi salvo com sucesso!', 'evento' => $evento], 201);
     }
 
-    public function show(string $id)
+    public function show(Request $request)
     {
         try {
-            if (!$id) {
+            if (!$request->id) {
                 return response()->json(['error' => 'ID do evento não informado.'], 400);
             }
 
-            $evento = Eventos::find($id);
+            $evento = Eventos::find($request->id);
 
             if (!$evento) {
                 return response()->json(['error' => 'Evento não encontrado.'], 404);
+            }
+
+            if($evento->idCliente != $request->idCliente){
+                return response()->json(['error' => 'Você não pode acessar esse evento.', 'idclienteevento' => $evento->idCliente, 'idCliente' => $request->idCliente], 403);
             }
 
         } catch (Exception $e) {
@@ -127,7 +131,7 @@ class EventosController extends Controller
                 'nomeEvento' => 'nullable|string|max:255',
                 'descricaoEvento' => 'nullable|string|max:500',
                 'dataEvento' => 'nullable|date',
-                'localEvento' => 'nullable|string|max:255',
+                'localEvento' => 'nullable|integer|max:255',
                 'prioridadeEvento' => 'nullable|integer',
                 'orcamentoEvento' => 'nullable|numeric',
             ]);

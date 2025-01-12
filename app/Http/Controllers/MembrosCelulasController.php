@@ -35,7 +35,7 @@ class MembrosCelulasController extends Controller
         // Validando os dados de entrada
         $validator = Validator::make($request->all(), [
             'idCelula' => 'required|integer|exists:celulas,id', // idCelula obrigatório e existente
-            'idPessoa' => 'required|integer|exists:pessoas,id', // idPessoa obrigatório e existente
+            'idPessoa' => 'required|integer|exists:users,id', // idPessoa obrigatório e existente
             'idCliente' => 'required|integer|exists:clientes,id', // idCliente obrigatório e existente
         ]);
 

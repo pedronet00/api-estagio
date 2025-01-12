@@ -108,17 +108,17 @@ class EncontrosCelulasController extends Controller
 
         try {
             $hoje = date('Y-m-d');
-            $proximoEncontro = EncontrosCelulas::where('idCelula', $id)
+           return $proximoEncontro = EncontrosCelulas::where('idCelula', $id)
                 ->with('localizacao', 'responsavel')
                 ->whereNull('qtdePresentes')
                 ->where('dataEncontro', '>=', $hoje)
                 ->orderBy('dataEncontro', 'asc')
-                ->first();
+                ->get();
         } catch (Exception $e) {
             return response()->json(['erro' => $e->getMessage()]);
         }
 
-        return $proximoEncontro;
+       
     }
 
     /**

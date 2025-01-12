@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Celulas;
 use App\Models\Clientes;
 use App\Models\Planos;
+use App\Models\MembrosCelulas;
 use Exception;
 
 class CelulasController extends Controller
@@ -92,6 +93,14 @@ class CelulasController extends Controller
             'idCliente' => $request->idCliente,
         ]);
 
+        // Inserindo o responsável como membro da célula
+        MembrosCelulas::create([
+            'idCelula' => $celula->id,
+            'idPessoa' => $request->responsavelCelula,
+            'idCliente' => $request->idCliente,
+            'status' => 1
+        ]);
+
         // Commit da transação
         DB::commit();
 
@@ -109,6 +118,7 @@ class CelulasController extends Controller
         ], 500);
     }
 }
+
 
 
     /**
@@ -131,6 +141,13 @@ class CelulasController extends Controller
         }
 
         return $celula;
+    }
+
+    public function contarMembrosCelula(Request $request)
+    {
+        $totalMembros = MembrosCelulas::where('idCelula', $request->idCelula)->count();
+
+        return response()->json(['totalMembros' => $totalMembros]);
     }
 
     /**

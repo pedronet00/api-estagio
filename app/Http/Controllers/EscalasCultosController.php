@@ -24,6 +24,14 @@ class EscalasCultosController extends Controller
                 'idPessoa' => 'required|exists:users,id',
                 'idCliente' => 'required|integer',
             ]);
+
+            $ja_existe_funcao_no_culto = EscalasCultos::where('idCulto', $request->idCulto)
+            ->where('idFuncaoCulto', $request->idFuncaoCulto)
+            ->exists();
+
+            if($ja_existe_funcao_no_culto){
+                return response()->json(['error' => 'Já existe alguém nessa função.'], 422);
+            }
     
             $usuario_ja_ocupa_funcao_no_culto = EscalasCultos::where('idCulto', $request->idCulto)
             ->where('idPessoa', $request->idPessoa)
@@ -67,42 +75,44 @@ class EscalasCultosController extends Controller
     }
 
     public function update(Request $request)
-{
-    try {
-        // Validação dos dados recebidos
-        $validated = $request->validate([
-            'idCulto' => 'required|exists:cultos,id',
-            'idFuncaoCulto' => 'required|exists:funcoes_cultos,id',
-            'idPessoa' => 'required|exists:users,id',
-        ]);
+    {
+        try {
+            // Validação dos dados recebidos
+            $validated = $request->validate([
+                'idCulto' => 'required|exists:cultos,id',
+                'idFuncaoCulto' => 'required|exists:funcoes_cultos,id',
+                'idPessoa' => 'required|exists:users,id',
+            ]);
 
-        // Encontra a escala específica do culto. Aqui, usamos `find()` ou `findOrFail()`
-        $escala = EscalasCultos::where('idCulto', $request->idCulto)->first();  // Usa `first()` para pegar o primeiro registro ou null
+            // Encontra a escala específica do culto. Aqui, usamos `find()` ou `findOrFail()`
+            $escala = EscalasCultos::where('idCulto', $request->idCulto)->first();  // Usa `first()` para pegar o primeiro registro ou null
 
-        // Verifica se a escala foi encontrada
-        if (!$escala) {
-            return response()->json(['error' => 'Culto não encontrado.'], 404);
+            // Verifica se a escala foi encontrada
+            if (!$escala) {
+                return response()->json(['error' => 'Culto não encontrado.'], 404);
+            }
+
+            if($escala->idPessoa != $request->idPessoa){
+                // Verifica se o usuário já está escalado para a função no culto
+                $usuario_ja_ocupa_funcao_no_culto = EscalasCultos::where('idCulto', $request->idCulto)
+                ->where('idPessoa', $request->idPessoa)
+                ->exists();
+
+                if ($usuario_ja_ocupa_funcao_no_culto) {
+                    return response()->json(['error' => 'Usuário já está escalado para uma função nesse culto.', 'idPessoaEscala' => $escala->idPessoa, 'idPessoaRequest' => $request->idPessoa], 422);
+                }
+            }
+
+            // Atualiza os dados da escala
+            $escala->update($validated);  // Atualiza diretamente a instância
+
+        } catch (Exception $e) {
+            // Em caso de erro, retorna a mensagem de erro
+            return response()->json(['error' => $e->getMessage()], 500);
         }
 
-        // Verifica se o usuário já está escalado para a função no culto
-        $usuario_ja_ocupa_funcao_no_culto = EscalasCultos::where('idCulto', $request->idCulto)
-            ->where('idPessoa', $request->idPessoa)
-            ->exists();
-
-        if ($usuario_ja_ocupa_funcao_no_culto) {
-            return response()->json(['error' => 'Usuário já está escalado para uma função nesse culto.'], 422);
-        }
-
-        // Atualiza os dados da escala
-        $escala->update($validated);  // Atualiza diretamente a instância
-
-    } catch (Exception $e) {
-        // Em caso de erro, retorna a mensagem de erro
-        return response()->json(['error' => $e->getMessage()], 500);
+        return response()->json($escala);  // Retorna a escala atualizada
     }
-
-    return response()->json($escala);  // Retorna a escala atualizada
-}
 
 
     public function destroy(Request $request)

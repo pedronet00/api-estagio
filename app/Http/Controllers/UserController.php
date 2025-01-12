@@ -120,14 +120,18 @@ class UserController extends Controller
         return $pastores;
     }
 
-    public function show(string $id)
+    public function show(Request $request)
     {
         try{
-            $user = User::with('perfil')->find($id);
+            $user = User::with('perfil')->find($request->id);
 
 
             if(!$user){
                 throw new Exception("Usuário não encontrado!");
+            }
+
+            if($user->idCliente != $request->idCliente){              
+                return response()->json(['error' => 'Você não pode acessar os dados desse usuário.'], 403);
             }
 
         } catch(Exception $e){

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\AulaEBD;
 use App\Models\ClassesEBD;
 use Exception;
+use Carbon\Carbon;
 
 class AulaEBDController extends Controller
 {
@@ -30,7 +31,17 @@ class AulaEBDController extends Controller
             return response()->json(['message' => 'Erro de validação', 'errors' => $validator->errors()], 422);
         }
 
+        // Validar se a data da aula é posterior a hoje
+        $dataAula = Carbon::parse($request->dataAula);
+
+        if ($dataAula->isFuture()) {
+            return response()->json([
+                'message' => 'A data da aula não pode ser no futuro!',
+            ], 400);
+        }
+
         try {
+            // Criar o registro da aula
             $aula = AulaEBD::create($validator->validated());
         } catch (Exception $e) {
             return response()->json(['message' => 'Erro ao salvar aula da EBD!', 'error' => $e->getMessage()], 500);

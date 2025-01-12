@@ -37,7 +37,7 @@ class MissoesController extends Controller
         'nomeMissao' => 'required|string|max:255',
         'quantidadeMembros' => 'required|integer',
         'cidadeMissao' => 'required|string|max:255',
-        'pastorTitular' => 'required|string|max:255',
+        'pastorTitular' => 'required|integer',
         'idCliente' => 'required|integer|exists:clientes,id', // idCliente obrigatório e deve existir
     ]);
 
@@ -97,11 +97,11 @@ class MissoesController extends Controller
 }
 
 
-    public function show(string $id)
+    public function show(Request $request)
     {
         // Validando o ID
-        $validator = Validator::make(['id' => $id], [
-            'id' => 'required|integer|exists:missoes,id', // ID obrigatório e existente
+        $validator = Validator::make(['id' => $request->id], [
+            'id' => 'required|exists:missoes,id', // ID obrigatório e existente
         ]);
 
         if ($validator->fails()) {
@@ -109,10 +109,14 @@ class MissoesController extends Controller
         }
 
         try {
-            $missao = Missoes::find($id);
+            $missao = Missoes::find($request->id);
 
             if (!$missao) {
                 throw new Exception("Missão não encontrada!");
+            }
+
+            if($missao->idCliente != $request->idCliente){
+                return response()->json(['error' => 'Você não pode acessar essa missão.', 'idClienteMissao' => $missao->idCliente, 'idClienteRequest' => $request->idCliente], 403);
             }
 
         } catch (Exception $e) {
@@ -129,7 +133,7 @@ class MissoesController extends Controller
             'nomeMissao' => 'nullable|string|max:255',
             'quantidadeMembros' => 'nullable|integer',
             'cidadeMissao' => 'nullable|string|max:255',
-            'pastorTitular' => 'nullable|string|max:255',
+            'pastorTitular' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {

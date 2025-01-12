@@ -93,9 +93,9 @@ class DepartamentosController extends Controller
 }
 
 
-    public function show(string $id)
+    public function show(Request $request)
     {
-        $validator = Validator::make(['id' => $id], [
+        $validator = Validator::make(['id' => $request->id], [
             'id' => 'required|integer|exists:departamentos,id',
         ]);
 
@@ -103,9 +103,13 @@ class DepartamentosController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $departamento = Departamentos::find($id);
+        $departamento = Departamentos::find($request->id);
         if (!$departamento) {
             return response()->json(['error' => 'Departamento não encontrado!'], 404);
+        }
+
+        if($departamento->idCliente != $request->idCliente){
+            return response()->json(['error' => 'Esse departamento não é seu!'], 403);
         }
 
         return response()->json(['departamento' => $departamento], 200);
