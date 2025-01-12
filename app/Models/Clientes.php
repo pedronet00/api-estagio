@@ -17,6 +17,7 @@ class Clientes extends Model
         'idPlano',
         'session_token',
         'statusPagamento',
-        'stripe_customer_id'
+        'stripe_customer_id',
+        'cnpj'
     ];
 }
