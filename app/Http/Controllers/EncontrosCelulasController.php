@@ -161,6 +161,33 @@ class EncontrosCelulasController extends Controller
             ], 422);
         }
 
-        // Lógica para remover o recurso
+        try{
+            $encontro = EncontrosCelulas::findOrFail($id);
+            $encontro->delete();
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return response()->json(['sucesso' => 'Encontro excluído com sucesso.']);
+    }
+
+    public function registrarPresentes(Request $request)
+    {
+        try{
+
+            $encontro = EncontrosCelulas::findOrFail($request->idEncontro);
+
+            if(!$encontro){
+                return response()->json(['erro' => 'Encontro não encontrado']);
+            }
+
+            $encontro->qtdePresentes = $request->qtdePresentes;
+            $encontro->save();
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return response()->json(['sucesso' => 'Dados de pessoas presentes registrados com sucesso.']);
     }
 }

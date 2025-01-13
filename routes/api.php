@@ -214,6 +214,8 @@ Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
     // Encontros células
     Route::get('/encontrosCelulas', [EncontrosCelulasController::class, 'index']);
     Route::post('/encontrosCelulas', [EncontrosCelulasController::class, 'store']);
+    Route::post('/encontrosCelulas/registrarPresentes', [EncontrosCelulasController::class, 'registrarPresentes']);
+    Route::delete('/encontrosCelulas/{id}', [EncontrosCelulasController::class, 'destroy']);
     Route::get('/proximoEncontroCelula/{id}', [EncontrosCelulasController::class, 'proximoEncontro']);
 
     // Membros células
