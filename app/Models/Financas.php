@@ -14,24 +14,20 @@ class Financas extends Model
     protected $fillable = ['saldoMensal'];
 
     // Função que calcula o saldo mensal do mês atual
-    public static function calcularSaldoMensal($idCliente)
+    public static function calcularSaldoMensal($idCliente, $inicio, $fim)
     {
-        // Pegando a data atual
-        $mesAtual = date('m');
-        $anoAtual = date('Y');
+       
 
         // Somando todas as entradas do mês atual para o cliente
         $totalEntradas = DB::table('entradas')
             ->where('idCliente', $idCliente)
-            ->whereMonth('data', $mesAtual)
-            ->whereYear('data', $anoAtual)
+            ->whereBetween('data', [$inicio, $fim])
             ->sum('valor');
 
         // Somando todas as saídas do mês atual para o cliente
         $totalSaidas = DB::table('saidas')
             ->where('idCliente', $idCliente)
-            ->whereMonth('data', $mesAtual)
-            ->whereYear('data', $anoAtual)
+            ->whereBetween('data', [$inicio, $fim])
             ->sum('valor');
 
         // Calculando o saldo

@@ -83,6 +83,10 @@ class FinancasController extends Controller
 
     public function gerarRelatorioFinancas(Request $request): JsonResponse
     {
+
+        $dataInicial = $request->dataInicial;
+        $dataFinal = $request->dataFinal;
+
         // Validando o parâmetro idCliente
         $validator = Validator::make($request->all(), [
             'idCliente' => 'required|integer|exists:clientes,id', // Verifica se idCliente é obrigatório, é um número inteiro e existe na tabela clientes
@@ -93,7 +97,7 @@ class FinancasController extends Controller
         }
 
         $idCliente = $request->idCliente;
-        $saldoMensal = Financas::calcularSaldoMensal($idCliente);
+        $saldoMensal = Financas::calcularSaldoMensal($idCliente, $dataInicial, $dataFinal);
 
         $entradasPorMes = [];
         $saidasPorMes = [];
@@ -107,13 +111,11 @@ class FinancasController extends Controller
 
         for ($mes = 1; $mes <= 12; $mes++) {
             $entradas = Entradas::where('idCliente', $idCliente)
-                ->whereYear('data', $anoAtual)
-                ->whereMonth('data', $mes)
+                ->whereBetween('data', [$dataInicial, $dataFinal])
                 ->sum('valor');
 
             $saidas = Saidas::where('idCliente', $idCliente)
-                ->whereYear('data', $anoAtual)
-                ->whereMonth('data', $mes)
+                ->whereBetween('data', [$dataInicial, $dataFinal])
                 ->sum('valor');
 
             $saldo = $entradas - $saidas;

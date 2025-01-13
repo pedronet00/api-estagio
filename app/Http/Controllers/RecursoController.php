@@ -103,8 +103,8 @@ class RecursoController extends Controller
         // Validando os dados da requisição
         $validator = Validator::make($request->all(), [
             'nomeRecurso' => 'required|string|max:255',
-            'tipoRecurso' => 'required|integer|exists:tipos_recurso,id',
-            'categoriaRecurso' => 'required|integer|exists:categorias_recurso,id',
+            'tipoRecurso' => 'required|integer|exists:tipo_recursos,id',
+            'categoriaRecurso' => 'required|integer|exists:categoria_recursos,id',
             'quantidadeRecurso' => 'required|integer|min:0',
             'idCliente' => 'required|integer|exists:clientes,id',
         ]);
@@ -195,6 +195,19 @@ class RecursoController extends Controller
 
     public function destroy(string $id)
     {
-        // Adicione a lógica de exclusão com validação aqui, se necessário
+       try{
+
+        $recurso = Recursos::find($id);
+
+        if(!$recurso){
+            return response()->json(['error' => 'Recurso não encontrado.']);
+        }
+        $recurso->delete();
+
+       } catch(Exception $e){
+        return response()->json(['erro'=>$e->getMessage()]);
+       }
+
+       return response()->json(['sucesso'=>'Recurso deletado com sucesso.']);
     }
 }

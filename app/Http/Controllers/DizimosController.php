@@ -8,6 +8,7 @@ use App\Models\Dizimos;
 use App\Models\Entradas;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class DizimosController extends Controller
 {
@@ -20,82 +21,82 @@ class DizimosController extends Controller
     }
 
     public function store(Request $request)
-{
-    // Validação dos campos de entrada
-    $validator = Validator::make($request->all(), [
-        'dataCulto' => 'required|date',
-        'turnoCulto' => 'required|in:0,1', // Assuming turnoCulto is 0 for 'Manhã' and 1 for 'Noite'
-        'valorArrecadado' => 'required|numeric|min:0',
-        'idCliente' => 'required|exists:clientes,id', // Verifica se o cliente existe
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'Erro na validação dos dados',
-            'errors' => $validator->errors(),
-        ], 400);
-    }
-
-    // Verificação da data do culto
-    $dataCulto = Carbon::parse($request->dataCulto);
-    if ($dataCulto->isFuture()) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'Não é permitido registrar dízimos para datas futuras.',
-        ], 400);
-    }
-
-    try {
-        // Verificar se já existe um registro para a data e turno
-        $existingDizimo = Dizimos::where('dataCulto', $request->dataCulto)
-            ->where('turnoCulto', $request->turnoCulto)
-            ->where('idCliente', $request->idCliente)
-            ->first();
-
-        if ($existingDizimo) {
-            throw new Exception("Já existe um registro para esta data e turno!");
-        }
-
-        // Definir o turno
-        $turnoCulto = $request->turnoCulto === 0 ? "Manhã" : "Noite";
-        $msgEntrada = "Dízimo de {$request->dataCulto}, no culto da {$turnoCulto}";
-
-        // Registrar o dízimo
-        $dizimo = Dizimos::create([
-            'dataCulto' => $request->dataCulto,
-            'turnoCulto' => $request->turnoCulto,
-            'valorArrecadado' => $request->valorArrecadado,
-            'idCliente' => $request->idCliente
+    {
+        // Validação dos campos de entrada
+        $validator = Validator::make($request->all(), [
+            'dataCulto' => 'required|date',
+            'turnoCulto' => 'required|in:0,1', // Assuming turnoCulto is 0 for 'Manhã' and 1 for 'Noite'
+            'valorArrecadado' => 'required|numeric|min:0',
+            'idCliente' => 'required|exists:clientes,id', // Verifica se o cliente existe
         ]);
 
-        // Registrar a entrada
-        $entrada = Entradas::create([
-            'descricao' => $msgEntrada,
-            'valor' => $request->valorArrecadado,
-            'categoria' => 1,
-            'data' => $request->dataCulto,
-            'idCliente' => $request->idCliente
-        ]);
-
-        if (!$entrada) {
-            throw new Exception("Erro ao registrar dízimo como entrada!");
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Erro na validação dos dados',
+                'errors' => $validator->errors(),
+            ], 400);
         }
 
-    } catch (Exception $e) {
-        return response()->json([
-            'status' => 500,
-            'message' => 'Erro ao salvar registro de dízimo',
-            'erro' => $e->getMessage()
-        ], 500);
-    }
+        // Verificação da data do culto
+        $dataCulto = Carbon::parse($request->dataCulto);
+        if ($dataCulto->isFuture()) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Não é permitido registrar dízimos para datas futuras.',
+            ], 400);
+        }
 
-    return response()->json([
-        'status' => 200,
-        'message' => 'Sucesso!',
-        'dizimo' => $dizimo
-    ]);
-}
+        try {
+            // Verificar se já existe um registro para a data e turno
+            $existingDizimo = Dizimos::where('dataCulto', $request->dataCulto)
+                ->where('turnoCulto', $request->turnoCulto)
+                ->where('idCliente', $request->idCliente)
+                ->first();
+
+            if ($existingDizimo) {
+                throw new Exception("Já existe um registro para esta data e turno!");
+            }
+
+            // Definir o turno
+            $turnoCulto = $request->turnoCulto === 0 ? "Manhã" : "Noite";
+            $msgEntrada = "Dízimo de {$request->dataCulto}, no culto da {$turnoCulto}";
+
+            // Registrar o dízimo
+            $dizimo = Dizimos::create([
+                'dataCulto' => $request->dataCulto,
+                'turnoCulto' => $request->turnoCulto,
+                'valorArrecadado' => $request->valorArrecadado,
+                'idCliente' => $request->idCliente
+            ]);
+
+            // Registrar a entrada
+            $entrada = Entradas::create([
+                'descricao' => $msgEntrada,
+                'valor' => $request->valorArrecadado,
+                'categoria' => 1,
+                'data' => $request->dataCulto,
+                'idCliente' => $request->idCliente
+            ]);
+
+            if (!$entrada) {
+                throw new Exception("Erro ao registrar dízimo como entrada!");
+            }
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Erro ao salvar registro de dízimo',
+                'erro' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Sucesso!',
+            'dizimo' => $dizimo
+        ]);
+    }
 
 
     public function gerarRelatorioDizimos(Request $request)
@@ -188,7 +189,51 @@ class DizimosController extends Controller
         ]);
     }
 
-    /**
-     * Other methods (show, update, destroy, etc.) can also be validated as needed.
-     */
+    public function destroy($id)
+    {
+        // Iniciar uma transação para garantir que ambos os registros sejam excluídos juntos
+        DB::beginTransaction();
+
+        try {
+            // Buscar o registro de dízimo pelo ID
+            $dizimo = Dizimos::findOrFail($id);
+
+            if($dizimo->turnoCulto == 0){
+                $turnoCulto = "Manhã";
+            } else{
+                $turnoCulto = "Noite";
+            }
+
+            // Localizar a entrada correspondente ao dízimo
+            $entrada = Entradas::where('descricao', 'like', "Dízimo de {$dizimo->dataCulto}, no culto da {$turnoCulto}")
+                ->where('idCliente', $dizimo->idCliente)
+                ->first();
+
+            // Excluir o dízimo
+            $dizimo->delete();
+
+            // Excluir a entrada correspondente se existir
+            if (!$entrada) {
+                return response()->json(['erro' => 'entrada não encontrada', 'msg' => $msg], 422);
+            }
+            
+            $entrada->delete();
+            // Confirmar a transação
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Dízimo e entrada correspondente excluídos com sucesso!'
+            ]);
+        } catch (Exception $e) {
+            // Reverter a transação em caso de erro
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 500,
+                'message' => 'Erro ao excluir o dízimo',
+                'erro' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

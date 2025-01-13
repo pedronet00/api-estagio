@@ -100,10 +100,12 @@ Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
     // Dízimos
     Route::get('/dizimos', [DizimosController::class, 'index']);
     Route::post('/dizimos', [DizimosController::class, 'store']);
+    Route::delete('/dizimos/{id}', [DizimosController::class, 'destroy']);
     
     // Recurso
     Route::get('/recurso', [RecursoController::class, 'index']);
     Route::post('/recurso', [RecursoController::class, 'store']);
+    Route::delete('/recurso/{id}', [RecursoController::class, 'destroy']);
     Route::patch('/recurso/{id}/diminuirQuantidade', [RecursoController::class, 'diminuirQuantidade']);
     Route::patch('/recurso/{id}/aumentarQuantidade', [RecursoController::class, 'aumentarQuantidade']);
     Route::get('/recursoReport', [RecursoController::class, 'gerarRelatorioRecursos']);
