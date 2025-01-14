@@ -30,6 +30,15 @@ class MembrosCelulasController extends Controller
             ->get();
     }
 
+    public function obterResponsavel(Request $request){
+        $responsavel = MembrosCelulas::where('idCelula', $request->idCelula)
+        ->with('pessoa')
+        ->orderBy('created_at', 'asc')
+        ->first();
+
+        return $responsavel;
+    }
+
     public function store(Request $request)
     {
         // Validando os dados de entrada

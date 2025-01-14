@@ -220,6 +220,7 @@ Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
 
     // Membros células
     Route::get('/membrosCelulas', [MembrosCelulasController::class, 'index']);
+    Route::get('/obterResponsavelCelula', [MembrosCelulasController::class, 'obterResponsavel']);
     Route::post('/membrosCelulas', [MembrosCelulasController::class, 'store']);
     Route::delete('/membrosCelulas/{id}', [MembrosCelulasController::class, 'destroy']);
 
