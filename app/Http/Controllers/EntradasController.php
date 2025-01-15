@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Entradas;
+use App\Models\Dizimos;
 use Illuminate\Support\Facades\Validator;
 
 class EntradasController extends Controller
@@ -63,13 +64,16 @@ class EntradasController extends Controller
     {
         try{
 
-            $saida = Entradas::find($id);
-            $saida->delete();
+            $entrada = Entradas::find($id);
+            $entrada->delete();
+
+            $dizimo = Dizimos::where('idEntrada', $entrada->id);
+            $dizimo->delete();
 
         } catch(Exception $e){
             return response()->json(['erro' => $e->getMessage()]);
         }
 
-        return response()->json(['sucesso' => "Saída excluída com sucesso."]);
+        return response()->json(['sucesso' => "Entrada excluída com sucesso."]);
     }
 }

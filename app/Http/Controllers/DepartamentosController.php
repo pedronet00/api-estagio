@@ -31,8 +31,7 @@ class DepartamentosController extends Controller
     $validator = Validator::make($request->all(), [
         'tituloDepartamento' => 'required|string|max:255',
         'textoDepartamento' => 'required|string',
-        'idCliente' => 'required|integer|exists:clientes,id',
-        'imgDepartamento' => 'required|file|image|max:2048',
+        'imgDepartamento' => 'sometimes|file|image|max:2048',
     ]);
 
     if ($validator->fails()) {
@@ -40,57 +39,29 @@ class DepartamentosController extends Controller
     }
 
     try {
-        // Iniciando a transação
-        DB::beginTransaction();
+        $departamento = new Departamentos();
+        $departamento->tituloDepartamento = $request->tituloDepartamento;
+        $departamento->textoDepartamento = $request->textoDepartamento;
+        $departamento->statusDepartamento = 1;
 
-        // Buscando o cliente e o plano associado
-        $cliente = Clientes::find($request->idCliente);
-        if (!$cliente) {
-            throw new Exception("Cliente não encontrado!");
+        if ($request->hasFile('imgDepartamento')) {
+            $file = $request->file('imgDepartamento');
+            if ($file->isValid()) {
+                $departamento->imgDepartamento = $file->store('departamentos', 'public');
+            } else {
+                throw new Exception("Arquivo de imagem inválido.");
+            }
         }
 
-        $plano = Planos::find($cliente->idPlano);
-        if (!$plano) {
-            throw new Exception("Plano do cliente não encontrado!");
-        }
+        $departamento->idCliente = $request->idCliente;
+        $departamento->save();
 
-        // Contar o número de departamentos existentes para o cliente
-        $departamentosExistentes = Departamentos::where('idCliente', $request->idCliente)->count();
-
-        // Verificar se o limite de departamentos será ultrapassado
-        if ($departamentosExistentes >= $plano->qtdeDepartamentos) {
-            throw new Exception("Limite de departamentos atingido.");
-        }
-
-        // Processar a imagem do departamento
-        $imgPath = $request->file('imgDepartamento')->store('departamentos', 'public');
-
-        // Criar o departamento
-        $departamento = Departamentos::create([
-            'tituloDepartamento' => $request->tituloDepartamento,
-            'textoDepartamento' => $request->textoDepartamento,
-            'imgDepartamento' => $imgPath,
-            'statusDepartamento' => 1,
-            'idCliente' => $request->idCliente,
-        ]);
-
-        // Commit da transação
-        DB::commit();
-
-        return response()->json([
-            'message' => 'Departamento cadastrado com sucesso!',
-            'departamento' => $departamento,
-        ], 201);
-
+        return response()->json(['message' => 'Departamento criado com sucesso!', 'departamento' => $departamento], 201);
     } catch (Exception $e) {
-        // Rollback da transação em caso de erro
-        DB::rollBack();
-        return response()->json([
-            'message' => 'Erro ao cadastrar departamento:',
-            'error' => $e->getMessage(),
-        ], 500);
+        return response()->json(['message' => 'Erro ao criar departamento', 'error' => $e->getMessage()], 500);
     }
 }
+
 
 
     public function show(Request $request)
@@ -115,11 +86,11 @@ class DepartamentosController extends Controller
         return response()->json(['departamento' => $departamento], 200);
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'tituloDepartamento' => 'sometimes|required|string|max:255',
-            'textoDepartamento' => 'sometimes|required|string',
+            'tituloDepartamento' => 'string|max:255',
+            'textoDepartamento' => 'string',
             'imgDepartamento' => 'sometimes|file|image|max:2048',
         ]);
 
@@ -128,14 +99,14 @@ class DepartamentosController extends Controller
         }
 
         try {
-            $departamento = Departamentos::find($id);
+            $departamento = Departamentos::find($request->id);
             if (!$departamento) {
                 throw new Exception("Departamento não encontrado!");
             }
 
-            if ($request->hasFile('imgDepartamento') && $request->file('imgDepartamento')->isValid()) {
-                $departamento->imgDepartamento = $request->file('imgDepartamento')->store('departamentos', 'public');
-            }
+            // if ($request->hasFile('imgDepartamento') && $request->file('imgDepartamento')->isValid()) {
+            //     $departamento->imgDepartamento = $request->file('imgDepartamento')->store('departamentos', 'public');
+            // }
 
             $departamento->tituloDepartamento = $request->tituloDepartamento ?? $departamento->tituloDepartamento;
             $departamento->textoDepartamento = $request->textoDepartamento ?? $departamento->textoDepartamento;

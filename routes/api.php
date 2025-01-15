@@ -99,12 +99,16 @@ Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
 
     // Dízimos
     Route::get('/dizimos', [DizimosController::class, 'index']);
+    Route::get('/dizimos/{id}', [DizimosController::class, 'show']);
+    Route::put('/dizimos/{id}', [DizimosController::class, 'update']);
     Route::post('/dizimos', [DizimosController::class, 'store']);
     Route::delete('/dizimos/{id}', [DizimosController::class, 'destroy']);
     
     // Recurso
     Route::get('/recurso', [RecursoController::class, 'index']);
+    Route::get('/recurso/{id}', [RecursoController::class, 'show']);
     Route::post('/recurso', [RecursoController::class, 'store']);
+    Route::put('/recurso/{id}', [RecursoController::class, 'update']);
     Route::delete('/recurso/{id}', [RecursoController::class, 'destroy']);
     Route::patch('/recurso/{id}/diminuirQuantidade', [RecursoController::class, 'diminuirQuantidade']);
     Route::patch('/recurso/{id}/aumentarQuantidade', [RecursoController::class, 'aumentarQuantidade']);

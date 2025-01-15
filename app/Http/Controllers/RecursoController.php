@@ -95,7 +95,19 @@ class RecursoController extends Controller
 
     public function show(string $id)
     {
-        // Adicione validações para o recurso se necessário
+        try{
+
+            $recurso = Recursos::with('categoria', 'tipo')->findOrFail($id);
+
+            if(!$recurso){
+                return response()->json(['erro' => 'Recurso não existe!']);
+            }
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return $recurso;
     }
 
     public function update(Request $request, string $id)

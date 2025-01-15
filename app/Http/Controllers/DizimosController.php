@@ -20,6 +20,23 @@ class DizimosController extends Controller
         return Dizimos::where('idCliente', $request->idCliente)->get();
     }
 
+    public function show(string $id){
+
+        try{
+
+            $dizimo = Dizimos::findOrFail($id);
+
+            if(!$dizimo){
+                return response()->json(['erro' => 'Dízimo não encontrado'], 422);
+            }
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return $dizimo;
+    }
+
     public function store(Request $request)
     {
         // Validação dos campos de entrada
@@ -67,7 +84,8 @@ class DizimosController extends Controller
                 'dataCulto' => $request->dataCulto,
                 'turnoCulto' => $request->turnoCulto,
                 'valorArrecadado' => $request->valorArrecadado,
-                'idCliente' => $request->idCliente
+                'idCliente' => $request->idCliente,
+                'idEntrada' => 999999
             ]);
 
             // Registrar a entrada
@@ -76,12 +94,16 @@ class DizimosController extends Controller
                 'valor' => $request->valorArrecadado,
                 'categoria' => 1,
                 'data' => $request->dataCulto,
-                'idCliente' => $request->idCliente
+                'idCliente' => $request->idCliente,
+                
             ]);
 
             if (!$entrada) {
                 throw new Exception("Erro ao registrar dízimo como entrada!");
             }
+
+            $dizimo->idEntrada = $entrada->id;
+            $dizimo->save();
 
         } catch (Exception $e) {
             return response()->json([
@@ -96,6 +118,49 @@ class DizimosController extends Controller
             'message' => 'Sucesso!',
             'dizimo' => $dizimo
         ]);
+    }
+
+    public function update(Request $request, string $id){
+
+        try{
+
+            $dizimo = Dizimos::findOrFail($id);
+
+            if(!$dizimo){
+                return response()->json(['erro' => 'Dízimo não encontrado'], 500);
+            }
+
+            $dizimo->dataCulto = $request->dataCulto ?? $dizimo->dataCulto;
+            $dizimo->turnoCulto = $request->turnoCulto ?? $dizimo->turnoCulto;
+            $dizimo->valorArrecadado = $request->valorArrecadado ?? $dizimo->valorArrecadado;
+            
+            $entrada = Entradas::findOrFail($dizimo->idEntrada);
+
+            if(!$entrada){
+                return response()->json(['erro' => 'Entrada não encontrada'], 500);
+            }
+
+            if($dizimo->turnoCulto == 0){
+                $turno = "Manhã";
+            } else{
+                $turno = "Noite";
+            }
+
+            $msg = "Dízimo de $dizimo->dataCulto, no turno da $turno";
+
+            $entrada->data = $request->dataCulto ?? $entrada->data;
+            $entrada->valor = $request->valorArrecadado ??$entrada->valor;
+            $entrada->descricao = $msg;
+
+            $dizimo->save();
+            $entrada->save();
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()]);
+        }
+
+        return response()->json(['sucesso' => "Dízimo e entrada atualizados com sucesso!"]);
+
     }
 
 

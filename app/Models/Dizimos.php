@@ -13,6 +13,7 @@ class Dizimos extends Model
         'dataCulto',
         'turnoCulto',
         'valorArrecadado',
-        'idCliente'
+        'idCliente',
+        'idEntrada'
     ];
 }
