@@ -67,7 +67,7 @@ class EntradasController extends Controller
             $entrada = Entradas::find($id);
             $entrada->delete();
 
-            $dizimo = Dizimos::where('idEntrada', $entrada->id);
+            $dizimo = Dizimos::where('idEntrada', $entrada->id)->first();
             $dizimo->delete();
 
         } catch(Exception $e){

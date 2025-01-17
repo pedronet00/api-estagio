@@ -85,7 +85,7 @@ class EscalasCultosController extends Controller
             ]);
 
             // Encontra a escala específica do culto. Aqui, usamos `find()` ou `findOrFail()`
-            $escala = EscalasCultos::where('idCulto', $request->idCulto)->first();  // Usa `first()` para pegar o primeiro registro ou null
+            $escala = EscalasCultos::where('id', $request->idEscala)->first();  // Usa `first()` para pegar o primeiro registro ou null
 
             // Verifica se a escala foi encontrada
             if (!$escala) {
@@ -93,15 +93,31 @@ class EscalasCultosController extends Controller
             }
 
             if($escala->idPessoa != $request->idPessoa){
-                // Verifica se o usuário já está escalado para a função no culto
+                // Verifica se o usuário já está escalado para a função em outra escala do culto
                 $usuario_ja_ocupa_funcao_no_culto = EscalasCultos::where('idCulto', $request->idCulto)
                 ->where('idPessoa', $request->idPessoa)
+				->where('id', '!=', $escala->id)
                 ->exists();
 
                 if ($usuario_ja_ocupa_funcao_no_culto) {
-                    return response()->json(['error' => 'Usuário já está escalado para uma função nesse culto.', 'idPessoaEscala' => $escala->idPessoa, 'idPessoaRequest' => $request->idPessoa], 422);
+                    return response()->json(['error' => 'Usuário já está escalado para uma função nesse culto.', 'escala' => $escala->id, 'idPessoaEscala' => $escala->idPessoa, 'idPessoaRequest' => $request->idPessoa], 422);
                 }
             }
+            
+            //Meu código
+            if($escala->idFuncaoCulto != $request->idFuncaoCulto){ //alteração de função
+
+								$funcao_ja_foi_escalada = EscalasCultos::where('idCulto', $request->idCulto)
+								->where('idFuncaoCulto', $request->idFuncaoCulto)
+								->where('id', '!=', $escala->id)
+								->exists();
+							
+								if($funcao_ja_foi_escalada){
+									return response()->json(['error' => 'Já existe alguém escalado para essa função nesse culto.', 'escala' => $escala->id, 'idPessoaEscala' => $escala->idPessoa, 'idPessoaRequest' => $request->idPessoa], 422);
+								}
+						}
+            
+            
 
             // Atualiza os dados da escala
             $escala->update($validated);  // Atualiza diretamente a instância

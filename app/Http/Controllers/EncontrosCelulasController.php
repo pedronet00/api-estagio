@@ -54,6 +54,15 @@ class EncontrosCelulasController extends Controller
             ], 422);
         }
 
+        $encontro_ja_existe = EncontrosCelulas::where('dataEncontro', $request->dataEncontro)
+        ->where('idLocal', $request->idLocal)
+        ->where('idCelula', $request->idCelula)
+        ->exists();
+
+        if($encontro_ja_existe){
+            return response()->json(['erro'=>'Encontro já existe nessa data e local.'], 422);
+        }
+
         try {
             $encontroCelula = EncontrosCelulas::create([
                 'idCelula' => $request->idCelula,
@@ -90,7 +99,9 @@ class EncontrosCelulasController extends Controller
             ], 422);
         }
 
-        // Lógica para exibir o recurso específico
+        $encontro = EncontrosCelulas::find($id);
+
+        return $encontro;
     }
 
     public function proximoEncontro(string $id)
@@ -128,7 +139,6 @@ class EncontrosCelulasController extends Controller
     {
         // Validação
         $validator = Validator::make($request->all(), [
-            'idCelula' => 'required|integer',
             'idLocal' => 'required|integer',
             'idPessoaEstudo' => 'required|integer',
             'dataEncontro' => 'required|date', 
@@ -142,7 +152,39 @@ class EncontrosCelulasController extends Controller
             ], 422);
         }
 
-        // Lógica de atualização do recurso
+        try{
+
+            $encontro = EncontrosCelulas::findOrFail($id);
+
+            if(!$encontro){
+                return response()->json(['erro' => 'Encontro não encontrado'], 422);
+            }
+
+            
+
+            $encontro_ja_existe = EncontrosCelulas::where('dataEncontro', $request->dataEncontro)
+            ->where('idLocal', $request->idLocal)
+            ->where('idCelula', $encontro->idCelula)
+            ->where('id', '!=', $encontro->id)
+            ->exists();
+
+            if($encontro_ja_existe){
+                return response()->json(['erro'=>'Encontro já existe nessa data e local.'], 422);
+            }
+
+            $encontro->idLocal = $request->idLocal ?? $encontro->idLocal;
+            $encontro->idPessoaEstudo = $request->idPessoaEstudo ?? $encontro->idPessoaEstudo;
+            $encontro->dataEncontro = $request->dataEncontro ?? $encontro->dataEncontro;
+            $encontro->qtdePresentes = $request->qtdePresentes ?? $encontro->qtdePresentes;
+            $encontro->temaEstudo = $request->temaEstudo ?? $encontro->temaEstudo;
+            $encontro->save();
+
+        } catch(Exception $e){
+            return response()->json(['erro' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['sucesso' => $encontro, 'encontro_ja_existe' => $encontro_ja_existe], 200);
+
     }
 
     /**
