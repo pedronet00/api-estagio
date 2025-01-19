@@ -38,6 +38,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CultoController;
 use App\Http\Controllers\EscalasCultosController;
 use App\Http\Controllers\FuncoesCultoController;
+use App\Http\Controllers\MailingController;
 use App\Mail\TestMail;
 use Illuminate\Support\Facades\Mail;
 
@@ -51,7 +52,10 @@ Route::post('/create-checkout-session', [PaymentController::class, 'createChecko
 Route::post('/delete-customer', [PaymentController::class, 'deleteCustomer']);
 Route::post('/success-checkout', [PaymentController::class, 'successCheckout']);
 
-Route::get('/enviarEmailTeste', [AuthController::class, 'enviarEmailsTestes']);
+Route::get('/emailAniversario', [MailingController::class, 'emailAniversarios']);
+Route::get('/getPasswordResetToken/{token}', [AuthController::class, 'verifyResetToken']);
+Route::post('/updatePassword/{email}', [AuthController::class, 'updatePassword']);
+Route::post('/enviarEmailCliente', [AuthController::class, 'enviarEmailCliente']);
 // Route::middleware('auth:sanctum')->group(function () {
 
     // Usuários

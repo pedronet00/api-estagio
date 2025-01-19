@@ -10,7 +10,7 @@ Route::get('/', function () {
 });
 
 Route::get('/email-preview', function () {
-    return view('mailing.test'); // Retorna diretamente a view do e-mail
+    return view('mailing.redefine_password'); // Retorna diretamente a view do e-mail
 });
 
 Route::get('/payment', [PaymentController::class, 'index'])->name('payment.index');

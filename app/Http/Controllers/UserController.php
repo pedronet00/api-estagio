@@ -10,6 +10,9 @@ use App\Models\Clientes;
 use App\Models\Planos;
 use Exception;
 use Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DefineUserPasswordMail;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -41,11 +44,10 @@ class UserController extends Controller
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6',
                 'perfil' => 'required',
                 'dataNascimentoUsuario' => 'required|date',
                 'idCliente' => 'required|integer',
-                'imgUsuario' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validação de imagem
+                'imgUsuario' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
 
             if ($validator->fails()) {
@@ -80,21 +82,41 @@ class UserController extends Controller
             if ($request->hasFile('imgUsuario')) {
                 $imgUsuarioPath = $request->file('imgUsuario')->store('images', 'public');
             }
+            $randomPassword = Str::random(24);
 
             // Criando o usuário
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => bcrypt($request->password), // Certifique-se de criptografar a senha
+                'password' => bcrypt($randomPassword),
                 'perfil' => $request->perfil,
-                'imgUsuario' => $imgUsuarioPath, // Salva o caminho da imagem
+                'imgUsuario' => $imgUsuarioPath,
                 'dataNascimentoUsuario' => $request->dataNascimentoUsuario,
                 'usuarioAtivo' => true,
                 'idCliente' => $request->idCliente,
             ]);
 
+            // Gerando token e data de expiração
+            $token = Str::random(60);
+            $tokenExpiration = now()->addHours(6);
+
+            // Inserindo token na tabela password_reset_tokens
+            DB::table('password_reset_tokens')->insert([
+                'email' => $user->email,
+                'token' => $token,
+                'token_expiration' => $tokenExpiration,
+                'tokenStatus' => 1
+            ]);
+
             // Commit da transação
             DB::commit();
+
+            // Enviar email com o link de definição de senha
+            try {
+                Mail::to($user->email)->send(new DefineUserPasswordMail($token));
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar e-mail: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'message' => 'Usuário criado com sucesso!',
@@ -109,8 +131,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-
-
 
 
     public function listarPastores(){

@@ -9,6 +9,9 @@ use Stripe\Exception\ApiErrorException;
 use App\Models\Clientes;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TestMail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use App\Mail\DefineUserPasswordMail;
 
 class PaymentController extends Controller
 {
@@ -275,7 +278,22 @@ class PaymentController extends Controller
             $customer->statusPagamento = "Pago";
             $customer->save();
             
-            Mail::to($customer->email)->send(new TestMail());
+             // Gerando token e data de expiração
+             $token = Str::random(60);
+             $tokenExpiration = now()->addHours(6);
+
+            DB::table('password_reset_tokens')->insert([
+                'email' => $customer->email,
+                'token' => $token,
+                'token_expiration' => $tokenExpiration,
+                'tokenStatus' => 1
+            ]);
+
+            try{
+                Mail::to($customer->email)->send(new DefineUserPasswordMail($token));
+            } catch (\Exception $e) {
+                \Log::error('Erro ao enviar e-mail: ' . $e->getMessage());
+            }
 
             // Retorna uma resposta de sucesso
             return response()->json(['message' => 'Status alterado para pago e email enviado.'], 200);
